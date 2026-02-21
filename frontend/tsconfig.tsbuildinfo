@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/vite-env.d.ts","./src/app/api.ts","./src/app/router.tsx","./src/features/auth/loginpage.tsx","./src/features/auth/registerpage.tsx","./src/features/auth/auth.store.ts","./src/features/cart/cartpage.tsx","./src/features/cart/cart.store.ts","./src/features/catalog/catalogpage.tsx","./src/features/checkout/checkoutpage.tsx"],"version":"5.9.3"}
