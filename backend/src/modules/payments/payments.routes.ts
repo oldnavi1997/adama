@@ -54,58 +54,64 @@ function verifyWebhookSignature(req: Request): boolean {
 }
 
 paymentsRouter.post("/webhook", async (req, res) => {
-  if (!verifyWebhookSignature(req)) {
-    res.status(401).json({ message: "Invalid webhook signature" });
-    return;
-  }
-
-  const event = req.body as { data?: { id?: string | number }; type?: string; action?: string };
-  const maybePaymentId = event?.data?.id;
-
-  if (!maybePaymentId || event.type !== "payment") {
-    res.status(200).json({ received: true });
-    return;
-  }
-
-  const paymentInfo = await getPaymentById(String(maybePaymentId));
-
-  const payment = await prisma.payment.findFirst({ where: { mpPaymentId: String(paymentInfo.id) } });
-
-  if (payment) {
-    res.status(200).json({ idempotent: true });
-    return;
-  }
-
-  if (!paymentInfo.external_reference) {
-    res.status(200).json({ ignored: true });
-    return;
-  }
-
-  const referencePayment = await prisma.payment.findUnique({
-    where: { externalReference: paymentInfo.external_reference }
-  });
-
-  if (!referencePayment) {
-    res.status(200).json({ ignored: true });
-    return;
-  }
-
-  const mappedStatus = mapPaymentStatus(paymentInfo.status);
-  await prisma.payment.update({
-    where: { id: referencePayment.id },
-    data: {
-      mpPaymentId: String(paymentInfo.id),
-      status: mappedStatus,
-      rawPayload: req.body
+  try {
+    if (!verifyWebhookSignature(req)) {
+      res.status(401).json({ message: "Invalid webhook signature" });
+      return;
     }
-  });
 
-  if (mappedStatus === PaymentStatus.APPROVED) {
-    await prisma.order.update({
-      where: { id: referencePayment.orderId },
-      data: { status: "PAID" }
+    const event = req.body as { data?: { id?: string | number }; type?: string; action?: string };
+    const maybePaymentId = event?.data?.id;
+
+    if (!maybePaymentId || event.type !== "payment") {
+      res.status(200).json({ received: true });
+      return;
+    }
+
+    const paymentInfo = await getPaymentById(String(maybePaymentId));
+
+    const payment = await prisma.payment.findFirst({ where: { mpPaymentId: String(paymentInfo.id) } });
+
+    if (payment) {
+      res.status(200).json({ idempotent: true });
+      return;
+    }
+
+    if (!paymentInfo.external_reference) {
+      res.status(200).json({ ignored: true });
+      return;
+    }
+
+    const referencePayment = await prisma.payment.findUnique({
+      where: { externalReference: paymentInfo.external_reference }
     });
-  }
 
-  res.status(200).json({ processed: true });
+    if (!referencePayment) {
+      res.status(200).json({ ignored: true });
+      return;
+    }
+
+    const mappedStatus = mapPaymentStatus(paymentInfo.status);
+    await prisma.payment.update({
+      where: { id: referencePayment.id },
+      data: {
+        mpPaymentId: String(paymentInfo.id),
+        status: mappedStatus,
+        rawPayload: req.body
+      }
+    });
+
+    if (mappedStatus === PaymentStatus.APPROVED) {
+      await prisma.order.update({
+        where: { id: referencePayment.orderId },
+        data: { status: "PAID" }
+      });
+    }
+
+    res.status(200).json({ processed: true });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Webhook processing error:", error);
+    res.status(500).json({ message: "Webhook processing failed" });
+  }
 });
