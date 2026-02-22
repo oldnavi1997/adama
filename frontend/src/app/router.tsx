@@ -2,6 +2,9 @@ import { createBrowserRouter, Link, Outlet } from "react-router-dom";
 import { CatalogPage } from "../features/catalog/CatalogPage";
 import { CartPage } from "../features/cart/CartPage";
 import { CheckoutPage } from "../features/checkout/CheckoutPage";
+import { CheckoutSuccessPage } from "../features/checkout/CheckoutSuccessPage";
+import { CheckoutFailurePage } from "../features/checkout/CheckoutFailurePage";
+import { CheckoutPendingPage } from "../features/checkout/CheckoutPendingPage";
 import { LoginPage } from "../features/auth/LoginPage";
 import { RegisterPage } from "../features/auth/RegisterPage";
 import { useAuthStore } from "../features/auth/auth.store";
@@ -47,6 +50,9 @@ export const router = createBrowserRouter([
       { index: true, element: <CatalogPage /> },
       { path: "cart", element: <CartPage /> },
       { path: "checkout", element: <CheckoutPage /> },
+      { path: "checkout/success", element: <CheckoutSuccessPage /> },
+      { path: "checkout/failure", element: <CheckoutFailurePage /> },
+      { path: "checkout/pending", element: <CheckoutPendingPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> }
     ]

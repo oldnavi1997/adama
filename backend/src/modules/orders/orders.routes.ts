@@ -6,6 +6,7 @@ import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validate.js";
 import { orderSchema, type CreateOrderInput } from "./orders.schema.js";
 import { createPreference } from "../payments/mercadopago.js";
+import { verifyAccessToken } from "../../lib/auth.js";
 
 export const ordersRouter = Router();
 
@@ -83,7 +84,8 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
 
   const requestHost = `${req.protocol}://${req.get("host")}`;
   const webhookBaseUrl = env.backendPublicUrl || requestHost;
-  const frontendBaseUrl = env.frontendOrigin;
+  const requestOrigin = typeof req.headers.origin === "string" ? req.headers.origin : "";
+  const frontendBaseUrl = requestOrigin || env.frontendOrigin;
 
   try {
     const preference = await createPreference({
@@ -130,6 +132,58 @@ ordersRouter.get("/my", requireAuth, async (req, res) => {
     orderBy: { createdAt: "desc" }
   });
   res.json(orders);
+});
+
+ordersRouter.get("/:id/confirmation", async (req, res) => {
+  const order = await prisma.order.findUnique({
+    where: { id: req.params.id },
+    include: {
+      items: true,
+      payments: true,
+      address: true,
+      user: { select: { id: true, email: true, fullName: true } }
+    }
+  });
+
+  if (!order) {
+    res.status(404).json({ message: "Order not found" });
+    return;
+  }
+
+  let tokenUserId: string | null = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const payload = verifyAccessToken(authHeader.replace("Bearer ", ""));
+      tokenUserId = payload.userId;
+    } catch {
+      tokenUserId = null;
+    }
+  }
+
+  const emailQuery = String(req.query.email ?? "")
+    .trim()
+    .toLowerCase();
+
+  const userAllowed = Boolean(tokenUserId && order.userId && tokenUserId === order.userId);
+  const guestAllowed = Boolean(order.guestEmail && emailQuery && order.guestEmail.toLowerCase() === emailQuery);
+
+  if (!userAllowed && !guestAllowed) {
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
+
+  res.json({
+    id: order.id,
+    status: order.status,
+    total: order.total,
+    createdAt: order.createdAt,
+    guestEmail: order.guestEmail,
+    user: order.user,
+    address: order.address,
+    items: order.items,
+    payments: order.payments
+  });
 });
 
 ordersRouter.get("/", requireAuth, requireRole(UserRole.ADMIN), async (_req, res) => {

@@ -47,6 +47,10 @@ export function CheckoutPage() {
       if (!checkoutUrl) {
         throw new Error("Mercado Pago did not return a checkout URL");
       }
+      localStorage.setItem("checkout_last_order_id", res.orderId);
+      if (email.trim()) {
+        localStorage.setItem("checkout_guest_email", email.trim());
+      }
       clear();
       window.location.href = checkoutUrl;
     } catch (e) {

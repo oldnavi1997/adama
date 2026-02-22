@@ -23,6 +23,7 @@ export async function createPreference(input: {
   const successUrl = input.successUrl || `${env.frontendOrigin}/checkout/success`;
   const failureUrl = input.failureUrl || `${env.frontendOrigin}/checkout/failure`;
   const pendingUrl = input.pendingUrl || `${env.frontendOrigin}/checkout/pending`;
+  const canUseAutoReturn = /^https?:\/\//.test(successUrl) && !successUrl.includes("localhost");
 
   const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
     method: "POST",
@@ -39,7 +40,8 @@ export async function createPreference(input: {
         success: successUrl,
         failure: failureUrl,
         pending: pendingUrl
-      }
+      },
+      ...(canUseAutoReturn ? { auto_return: "approved" as const } : {})
     })
   });
 
