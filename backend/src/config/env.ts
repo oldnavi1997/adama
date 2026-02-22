@@ -13,6 +13,8 @@ export const env = {
   databaseUrl: required("DATABASE_URL", process.env.DATABASE_URL),
   frontendOrigin: process.env.FRONTEND_ORIGIN ?? "http://localhost:5173",
   adminOrigin: process.env.ADMIN_ORIGIN ?? "http://localhost:5174",
+  logRequests: process.env.LOG_REQUESTS === "true",
+  logWebhookEvents: process.env.LOG_WEBHOOK_EVENTS === "true",
   backendPublicUrl: process.env.BACKEND_PUBLIC_URL ?? "",
   jwtAccessSecret: required("JWT_ACCESS_SECRET", process.env.JWT_ACCESS_SECRET),
   jwtRefreshSecret: required("JWT_REFRESH_SECRET", process.env.JWT_REFRESH_SECRET),

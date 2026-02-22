@@ -22,6 +22,18 @@ app.use(
 );
 app.use(express.json());
 
+if (env.logRequests) {
+  app.use((req, res, next) => {
+    const startedAt = Date.now();
+    res.on("finish", () => {
+      const durationMs = Date.now() - startedAt;
+      // eslint-disable-next-line no-console
+      console.log(`[HTTP] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${durationMs}ms)`);
+    });
+    next();
+  });
+}
+
 app.get("/", (_req, res) => {
   res.type("html").send(
     renderBackendHome({

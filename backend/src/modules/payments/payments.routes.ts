@@ -55,7 +55,21 @@ function verifyWebhookSignature(req: Request): boolean {
 
 paymentsRouter.post("/webhook", async (req, res) => {
   try {
+    if (env.logWebhookEvents) {
+      // eslint-disable-next-line no-console
+      console.log("[WEBHOOK] incoming", {
+        query: req.query,
+        xRequestId: req.headers["x-request-id"],
+        xSignature: req.headers["x-signature"],
+        body: req.body
+      });
+    }
+
     if (!verifyWebhookSignature(req)) {
+      if (env.logWebhookEvents) {
+        // eslint-disable-next-line no-console
+        console.log("[WEBHOOK] rejected invalid signature");
+      }
       res.status(401).json({ message: "Invalid webhook signature" });
       return;
     }
@@ -64,6 +78,10 @@ paymentsRouter.post("/webhook", async (req, res) => {
     const maybePaymentId = event?.data?.id;
 
     if (!maybePaymentId || event.type !== "payment") {
+      if (env.logWebhookEvents) {
+        // eslint-disable-next-line no-console
+        console.log("[WEBHOOK] ignored non-payment event", { type: event.type, action: event.action, dataId: maybePaymentId });
+      }
       res.status(200).json({ received: true });
       return;
     }
@@ -73,11 +91,19 @@ paymentsRouter.post("/webhook", async (req, res) => {
     const payment = await prisma.payment.findFirst({ where: { mpPaymentId: String(paymentInfo.id) } });
 
     if (payment) {
+      if (env.logWebhookEvents) {
+        // eslint-disable-next-line no-console
+        console.log("[WEBHOOK] idempotent payment", { mpPaymentId: paymentInfo.id });
+      }
       res.status(200).json({ idempotent: true });
       return;
     }
 
     if (!paymentInfo.external_reference) {
+      if (env.logWebhookEvents) {
+        // eslint-disable-next-line no-console
+        console.log("[WEBHOOK] ignored payment without external_reference", { mpPaymentId: paymentInfo.id });
+      }
       res.status(200).json({ ignored: true });
       return;
     }
@@ -87,6 +113,10 @@ paymentsRouter.post("/webhook", async (req, res) => {
     });
 
     if (!referencePayment) {
+      if (env.logWebhookEvents) {
+        // eslint-disable-next-line no-console
+        console.log("[WEBHOOK] ignored unknown external_reference", { externalReference: paymentInfo.external_reference });
+      }
       res.status(200).json({ ignored: true });
       return;
     }
@@ -108,6 +138,14 @@ paymentsRouter.post("/webhook", async (req, res) => {
       });
     }
 
+    if (env.logWebhookEvents) {
+      // eslint-disable-next-line no-console
+      console.log("[WEBHOOK] processed", {
+        orderId: referencePayment.orderId,
+        mpPaymentId: paymentInfo.id,
+        status: mappedStatus
+      });
+    }
     res.status(200).json({ processed: true });
   } catch (error) {
     // eslint-disable-next-line no-console
