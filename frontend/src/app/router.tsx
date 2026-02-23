@@ -275,7 +275,7 @@ function Layout() {
                   <strong>S/ {cartTotal.toFixed(2)}</strong>
                 </div>
                 <div className="cart-drawer-summary-row">
-                  <span>Entrega</span>
+                  <span>Envío</span>
                   <span>Por calcular</span>
                 </div>
                 <div className="cart-drawer-summary-row cart-drawer-summary-total">

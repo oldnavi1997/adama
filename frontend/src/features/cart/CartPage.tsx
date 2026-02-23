@@ -92,7 +92,7 @@ export function CartPage() {
               <strong>S/ {subtotal.toFixed(2)}</strong>
             </div>
             <div className="cart-summary-row">
-              <span>Entrega</span>
+              <span>Envío</span>
               <span>Por calcular</span>
             </div>
             <div className="cart-summary-row cart-summary-row--total">

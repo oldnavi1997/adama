@@ -18,7 +18,9 @@ export const orderSchema = z.object({
         quantity: z.number().int().positive()
       })
     )
-    .min(1)
+    .min(1),
+  shippingCost: z.number().min(0).optional(),
+  mpCommission: z.number().min(0).optional()
 });
 
 export type CreateOrderInput = z.infer<typeof orderSchema>;

@@ -32,6 +32,9 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
     }
     total += Number(product.price) * item.quantity;
   }
+  const shippingCost = Number(payload.shippingCost ?? 0);
+  const mpCommission = Number(payload.mpCommission ?? 0);
+  total += shippingCost + mpCommission;
 
   const order = await prisma.$transaction(async (tx) => {
     for (const item of payload.items) {
@@ -88,16 +91,33 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
   const frontendBaseUrl = requestOrigin || env.frontendOrigin;
 
   try {
+    const preferenceItems = order.items.map((item) => ({
+      title: item.productName,
+      quantity: item.quantity,
+      unit_price: Number(item.productPrice),
+      currency_id: "PEN" as const
+    }));
+    if (shippingCost > 0) {
+      preferenceItems.push({
+        title: "Envío",
+        quantity: 1,
+        unit_price: shippingCost,
+        currency_id: "PEN" as const
+      });
+    }
+    if (mpCommission > 0) {
+      preferenceItems.push({
+        title: "Comisión Mercado Pago",
+        quantity: 1,
+        unit_price: Math.round(mpCommission * 100) / 100,
+        currency_id: "PEN" as const
+      });
+    }
     const preference = await createPreference({
       externalReference,
       notificationUrl: `${webhookBaseUrl}/api/payments/webhook`,
       payerEmail: payload.guestEmail,
-      items: order.items.map((item) => ({
-        title: item.productName,
-        quantity: item.quantity,
-        unit_price: Number(item.productPrice),
-        currency_id: "PEN"
-      })),
+      items: preferenceItems,
       successUrl: `${frontendBaseUrl}/checkout/success`,
       failureUrl: `${frontendBaseUrl}/checkout/failure`,
       pendingUrl: `${frontendBaseUrl}/checkout/pending`

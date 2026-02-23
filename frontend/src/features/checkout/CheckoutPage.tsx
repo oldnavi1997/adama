@@ -24,12 +24,41 @@ const DEPARTMENTS = UBIGEO.departments;
 const PROVINCES_BY_DEPARTMENT = UBIGEO.provincesByDepartment;
 const DISTRICTS_BY_DEPARTMENT_PROVINCE = UBIGEO.districtsByDepartmentProvince;
 
+const SHALOM_PRICE = 8;
+const OLVA_PRICE_BY_DEPARTMENT: Record<string, number> = {
+  Amazonas: 18,
+  Ancash: 18,
+  Apurimac: 15,
+  Ayacucho: 15,
+  Cajamarca: 16,
+  Cusco: 15,
+  Huancavelica: 16,
+  Huanuco: 18,
+  Ica: 15,
+  Junin: 16,
+  "La Libertad": 16,
+  Lambayeque: 18,
+  Lima: 15,
+  Loreto: 20,
+  "Madre de Dios": 16,
+  Moquegua: 12,
+  Pasco: 16,
+  Piura: 18,
+  Puno: 12,
+  "San Martin": 18,
+  Tacna: 12,
+  Tumbes: 20,
+  Ucayali: 16,
+  Arequipa: 15,
+  Callao: 15
+};
+
 export function CheckoutPage() {
   const { items } = useCartStore();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [district, setDistrict] = useState("");
+  const [districtSelectValue, setDistrictSelectValue] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [documentType, setDocumentType] = useState<"dni" | "cde">("dni");
@@ -45,8 +74,14 @@ export function CheckoutPage() {
     postalCode: "",
     country: "Peru"
   });
+  const [courier, setCourier] = useState<"shalom" | "olva">("shalom");
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const hasFreeShipping = subtotal >= 299;
+  const shippingCost =
+    courier === "shalom" ? SHALOM_PRICE : OLVA_PRICE_BY_DEPARTMENT[address.state] ?? 15;
+  const beforeCommission = subtotal + shippingCost;
+  const mpCommission = 0.0329 * beforeCommission + 0.0329 * beforeCommission * 0.18 + 1.18;
+  const total = beforeCommission + mpCommission;
 
   const emailTrim = email.trim();
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim);
@@ -59,7 +94,6 @@ export function CheckoutPage() {
   const validPhone = phone.trim().length >= 5;
   const validStreet = address.street.trim().length >= 3;
   const validLocation = Boolean(address.state && address.city && address.postalCode);
-  const validCountry = address.country.trim().length >= 2;
 
   const canSubmit =
     validEmail &&
@@ -68,8 +102,7 @@ export function CheckoutPage() {
     validDocument &&
     validPhone &&
     validStreet &&
-    validLocation &&
-    validCountry;
+    validLocation;
 
   function updateAddressField(field: keyof typeof address, value: string) {
     setAddress((prev) => ({ ...prev, [field]: value }));
@@ -85,7 +118,7 @@ export function CheckoutPage() {
       city: "",
       postalCode: ""
     }));
-    setDistrict("");
+    setDistrictSelectValue("");
   }
 
   function handleProvinceChange(value: string) {
@@ -94,12 +127,12 @@ export function CheckoutPage() {
       city: value,
       postalCode: ""
     }));
-    setDistrict("");
+    setDistrictSelectValue("");
   }
 
   function handleDistrictChange(value: string) {
-    const [districtName, postalCode] = value.split("___");
-    setDistrict(districtName || "");
+    const [, postalCode] = value.split("___");
+    setDistrictSelectValue(value);
     setAddress((prev) => ({
       ...prev,
       postalCode: postalCode || ""
@@ -122,7 +155,9 @@ export function CheckoutPage() {
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity
-        }))
+        })),
+        shippingCost,
+        mpCommission: Number(mpCommission.toFixed(2))
       };
 
       const res = await api<OrderResponse>("/orders", {
@@ -316,7 +351,7 @@ export function CheckoutPage() {
                   </label>
                   <label className="checkout-field">
                     <span>Distrito</span>
-                    <select value={district} onChange={(e) => handleDistrictChange(e.target.value)} disabled={!address.city}>
+                    <select value={districtSelectValue} onChange={(e) => handleDistrictChange(e.target.value)} disabled={!address.city}>
                       <option value="">Seleccionar distrito</option>
                       {districtOptions.map((districtOption) => (
                         <option
@@ -327,14 +362,6 @@ export function CheckoutPage() {
                         </option>
                       ))}
                     </select>
-                  </label>
-                  <label className="checkout-field">
-                    <span>Pais</span>
-                    <input
-                      value={address.country}
-                      onChange={(e) => updateAddressField("country", e.target.value)}
-                      placeholder="Peru"
-                    />
                   </label>
                 </div>
               </div>
@@ -390,18 +417,49 @@ export function CheckoutPage() {
               </div>
             ))}
           </div>
+          <div className="checkout-summary-shipping" role="radiogroup" aria-label="Empresa de envío">
+            <span className="checkout-summary-shipping-label">Envío</span>
+            <div className="checkout-courier-options">
+              <label className="checkout-courier-option">
+                <input
+                  type="radio"
+                  name="checkout-courier"
+                  value="shalom"
+                  checked={courier === "shalom"}
+                  onChange={() => setCourier("shalom")}
+                />
+                <span>Shalom — S/ {SHALOM_PRICE.toFixed(2)}</span>
+              </label>
+              <label className="checkout-courier-option">
+                <input
+                  type="radio"
+                  name="checkout-courier"
+                  value="olva"
+                  checked={courier === "olva"}
+                  onChange={() => setCourier("olva")}
+                />
+                <span>
+                  Olva Courier — {address.state ? `S/ ${(OLVA_PRICE_BY_DEPARTMENT[address.state] ?? 15).toFixed(2)}` : "según departamento"}
+                </span>
+              </label>
+            </div>
+          </div>
           <div className="checkout-summary-total">
             <div>
               <span>Subtotal</span>
               <strong>S/ {subtotal.toFixed(2)}</strong>
             </div>
             <div>
-              <span>Entrega</span>
-              <strong>{hasFreeShipping ? "Gratis" : "Por calcular"}</strong>
+              <span>Envío</span>
+              <strong>S/ {shippingCost.toFixed(2)}</strong>
+            </div>
+            <div>
+              <span>Comisión Mercado Pago</span>
+              <strong>S/ {mpCommission.toFixed(2)}</strong>
             </div>
             <div className="checkout-summary-total-row">
               <span>Total</span>
-              <strong>S/ {subtotal.toFixed(2)}</strong>
+              <strong>S/ {total.toFixed(2)}</strong>
             </div>
           </div>
         </aside>
