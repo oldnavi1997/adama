@@ -46,5 +46,14 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     const errorText = await response.text();
     throw new Error(errorText || `HTTP ${response.status}`);
   }
-  return (await response.json()) as T;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const responseText = await response.text();
+  if (!responseText) {
+    return undefined as T;
+  }
+
+  return JSON.parse(responseText) as T;
 }

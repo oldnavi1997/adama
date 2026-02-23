@@ -1,12 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap");
+
+:root {
+  --fs-h1: clamp(1.7rem, 2.9vw, 2.2rem);
+  --fs-h2: clamp(1.3rem, 2.1vw, 1.7rem);
+  --fs-h3: clamp(1.05rem, 1.6vw, 1.25rem);
+  --fs-body: 1rem;
+  --fs-small: 0.92rem;
+  --lh-tight: 1.25;
+  --lh-body: 1.6;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Jost", sans-serif;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   background: #f5f7fb;
   color: #1f2937;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: var(--lh-tight);
+  letter-spacing: 0.01em;
+  font-weight: 600;
+  color: #111827;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+}
+
+h3 {
+  font-size: var(--fs-h3);
+}
+
+p,
+li,
+input,
+select,
+button,
+textarea {
+  font-size: var(--fs-body);
 }
 
 .container {
@@ -18,7 +63,6 @@ body {
 .card {
   background: white;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
   padding: 12px;
 }
 
@@ -30,7 +74,8 @@ body {
 
 input,
 button,
-select {
+select,
+textarea {
   font: inherit;
   padding: 8px 10px;
   border: 1px solid #d1d5db;
@@ -65,6 +110,7 @@ header {
 .admin-header p {
   margin-top: 0;
   color: #6b7280;
+  font-size: var(--fs-small);
 }
 
 .admin-form .grid {
@@ -78,4 +124,19 @@ header {
 
 .error {
   color: crimson;
+}
+
+.admin-gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.admin-gallery-preview img {
+  width: 100%;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
 }
