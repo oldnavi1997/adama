@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../../app/api";
+import { useCartStore } from "../cart/cart.store";
 
 type OrderSummary = {
   id: string;
@@ -37,6 +38,7 @@ export function CheckoutSuccessPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [order, setOrder] = useState<OrderSummary | null>(null);
+  const { clear } = useCartStore();
 
   const orderId = useMemo(() => resolveOrderId(searchParams), [searchParams]);
 
@@ -54,6 +56,7 @@ export function CheckoutSuccessPage() {
       try {
         const summary = await api<OrderSummary>(`/orders/${orderId}/confirmation${query}`, { auth: true });
         setOrder(summary);
+        clear();
         localStorage.removeItem("checkout_last_order_id");
       } catch (err) {
         setError((err as Error).message);

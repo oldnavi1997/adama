@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed": "tsx prisma/seed.ts",
-    "import:woo": "tsx src/scripts/import-woocommerce.ts"
+    "import:woo": "tsx src/scripts/import-woocommerce.ts",
+    "migrate:cloudinary": "tsx src/scripts/migrate-images-to-cloudinary.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

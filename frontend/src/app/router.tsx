@@ -8,6 +8,7 @@ import { CheckoutPage } from "../features/checkout/CheckoutPage";
 import { CheckoutSuccessPage } from "../features/checkout/CheckoutSuccessPage";
 import { CheckoutFailurePage } from "../features/checkout/CheckoutFailurePage";
 import { CheckoutPendingPage } from "../features/checkout/CheckoutPendingPage";
+import { useCartStore } from "../features/cart/cart.store";
 import { api } from "./api";
 
 type PublicCategory = {
@@ -79,7 +80,11 @@ function MobileCategoryItem({
 function Layout() {
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const location = useLocation();
+  const { items, updateQty, removeItem } = useCartStore();
+  const cartItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const cartTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   useEffect(() => {
     api<PublicCategory[]>("/products/categories/public")
@@ -89,10 +94,11 @@ function Layout() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsCartDrawerOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!isMobileMenuOpen) {
+    if (!isMobileMenuOpen && !isCartDrawerOpen) {
       return;
     }
 
@@ -102,12 +108,26 @@ function Layout() {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, isCartDrawerOpen]);
 
   return (
     <>
       <header>
         <div className="container row" style={{ justifyContent: "space-between", paddingBlock: 12 }}>
+          <button
+            type="button"
+            className="mobile-menu-toggle"
+            aria-label="Abrir menu"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => {
+              setIsCartDrawerOpen(false);
+              setIsMobileMenuOpen(true);
+            }}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
           <nav>
             <Link to="/" className="brand-link">
               <img
@@ -126,25 +146,40 @@ function Layout() {
               </ul>
             </nav>
           )}
-          <nav>
-            <Link to="/cart">Carrito</Link>
+          <nav className="cart-trigger-nav">
+            <button
+              type="button"
+              className="cart-icon-button"
+              aria-label="Abrir carrito"
+              aria-expanded={isCartDrawerOpen}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsCartDrawerOpen(true);
+              }}
+            >
+              <svg className="cart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M3 4h2l2.2 9.2a2 2 0 0 0 2 1.55h7.9a2 2 0 0 0 1.95-1.54L21 7H7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="10" cy="19" r="1.7" fill="currentColor" />
+                <circle cx="17" cy="19" r="1.7" fill="currentColor" />
+              </svg>
+              {cartItemsCount > 0 ? <span className="cart-badge">{cartItemsCount}</span> : null}
+            </button>
           </nav>
-          <button
-            type="button"
-            className="mobile-menu-toggle"
-            aria-label="Abrir menu"
-            aria-expanded={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
         </div>
       </header>
       <div
-        className={`mobile-menu-overlay ${isMobileMenuOpen ? "open" : ""}`}
-        onClick={() => setIsMobileMenuOpen(false)}
+        className={`mobile-menu-overlay ${isMobileMenuOpen || isCartDrawerOpen ? "open" : ""}`}
+        onClick={() => {
+          setIsMobileMenuOpen(false);
+          setIsCartDrawerOpen(false);
+        }}
       />
       <aside className={`mobile-menu-drawer ${isMobileMenuOpen ? "open" : ""}`} aria-hidden={!isMobileMenuOpen}>
         <div className="mobile-menu-header">
@@ -174,6 +209,95 @@ function Layout() {
             </ul>
           ) : null}
         </nav>
+      </aside>
+      <aside className={`cart-drawer ${isCartDrawerOpen ? "open" : ""}`} aria-hidden={!isCartDrawerOpen}>
+        <div className="mobile-menu-header">
+          <strong>Carrito</strong>
+          <button
+            type="button"
+            className="mobile-menu-close"
+            aria-label="Cerrar carrito"
+            onClick={() => setIsCartDrawerOpen(false)}
+          >
+            ×
+          </button>
+        </div>
+        <div className="cart-drawer-content">
+          {items.length === 0 ? (
+            <p>Tu carrito esta vacio.</p>
+          ) : (
+            <>
+              <div className="cart-drawer-list">
+                {items.map((item) => (
+                  <div key={item.productId} className="cart-drawer-item">
+                    <div className="cart-drawer-item-main">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.name} className="cart-drawer-thumb" />
+                      ) : (
+                        <div className="cart-drawer-thumb cart-drawer-thumb--fallback" aria-hidden="true" />
+                      )}
+                      <div className="cart-drawer-item-info">
+                        <div className="cart-drawer-item-top">
+                          <span className="cart-drawer-brand">Adamantio</span>
+                          <button
+                            type="button"
+                            className="cart-drawer-remove-icon"
+                            aria-label={`Eliminar ${item.name}`}
+                            onClick={() => removeItem(item.productId)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <strong className="cart-drawer-name">{item.name}</strong>
+                        <div className="cart-drawer-item-meta">
+                          <select
+                            className="cart-drawer-qty"
+                            value={item.quantity}
+                            onChange={(e) => updateQty(item.productId, Number(e.target.value))}
+                            aria-label={`Cantidad de ${item.name}`}
+                          >
+                            {Array.from({ length: 10 }, (_, index) => index + 1).map((qty) => (
+                              <option key={qty} value={qty}>
+                                {qty}
+                              </option>
+                            ))}
+                          </select>
+                          <strong className="cart-drawer-line-price">S/ {(item.price * item.quantity).toFixed(2)}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="cart-drawer-footer">
+                <div className="cart-drawer-summary-row">
+                  <span>Subtotal</span>
+                  <strong>S/ {cartTotal.toFixed(2)}</strong>
+                </div>
+                <div className="cart-drawer-summary-row">
+                  <span>Entrega</span>
+                  <span>Por calcular</span>
+                </div>
+                <div className="cart-drawer-summary-row cart-drawer-summary-total">
+                  <span>Total</span>
+                  <strong>S/ {cartTotal.toFixed(2)}</strong>
+                </div>
+                <Link
+                  to="/checkout"
+                  className="cart-drawer-checkout-btn"
+                  onClick={() => setIsCartDrawerOpen(false)}
+                >
+                  Ir al checkout
+                </Link>
+                <div className="cart-drawer-footer-links">
+                  <Link to="/cart" onClick={() => setIsCartDrawerOpen(false)}>
+                    Ver carrito completo
+                  </Link>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </aside>
       <main className="container">
         <Outlet />

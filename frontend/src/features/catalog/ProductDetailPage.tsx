@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { api } from "../../app/api";
 import { useCartStore } from "../cart/cart.store";
 import { slugify } from "../../app/slug";
@@ -22,6 +22,13 @@ export function ProductDetailPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const dragState = useRef({
+    active: false,
+    pointerId: -1,
+    startX: 0,
+    deltaX: 0
+  });
 
   const galleryImages = Array.from(
     new Set(
@@ -94,6 +101,48 @@ export function ProductDetailPage() {
     setCurrentIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
   };
 
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!hasMultipleImages) return;
+    dragState.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      deltaX: 0
+    };
+    setIsDraggingImage(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragState.current.active || dragState.current.pointerId !== event.pointerId) return;
+    dragState.current.deltaX = event.clientX - dragState.current.startX;
+  };
+
+  const handlePointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragState.current.active || dragState.current.pointerId !== event.pointerId) return;
+
+    const deltaX = dragState.current.deltaX;
+    dragState.current = {
+      active: false,
+      pointerId: -1,
+      startX: 0,
+      deltaX: 0
+    };
+    setIsDraggingImage(false);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    const SWIPE_THRESHOLD_PX = 40;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
+    if (deltaX < 0) {
+      goNext();
+    } else {
+      goPrevious();
+    }
+  };
+
   return (
     <section className="product-page-premium">
       <div className="row" style={{ marginBottom: 12 }}>
@@ -104,8 +153,14 @@ export function ProductDetailPage() {
         <div className="card product-media">
           {hasGallery ? (
             <div className="image-slider">
-              <div className="image-slider__image">
-                <img src={currentImage} alt={product.name} className="product-image" />
+              <div
+                className={`image-slider__image ${isDraggingImage ? "dragging" : ""}`}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerEnd}
+                onPointerCancel={handlePointerEnd}
+              >
+                <img key={currentImage} src={currentImage} alt={product.name} className="product-image product-image--fade-in" />
                 {hasMultipleImages && (
                   <>
                     <button type="button" className="image-slider__nav image-slider__nav--prev" onClick={goPrevious}>
@@ -152,7 +207,8 @@ export function ProductDetailPage() {
               addItem({
                 productId: product.id,
                 name: product.name,
-                price: Number(product.price)
+                price: Number(product.price),
+                imageUrl: currentImage || product.imageUrl || product.imageUrls?.[0] || ""
               })
             }
             disabled={product.stock < 1}
