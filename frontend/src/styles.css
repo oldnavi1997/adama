@@ -1175,6 +1175,16 @@ header nav {
 
 .product-page-premium {
   font-family: "Jost", sans-serif;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1200px) {
+  .product-layout {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 20px;
+  }
 }
 
 .product-page-premium .product-summary h1 {
