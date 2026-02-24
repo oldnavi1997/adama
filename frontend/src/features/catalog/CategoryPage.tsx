@@ -114,7 +114,7 @@ export function CategoryPage() {
   }
 
   return (
-    <section>
+    <section className="category-page">
       <div className="catalog-hero">
         <h1>{currentCategory.name}</h1>
         <p className="muted">Mostrando {products.length} de {total} resultados</p>
