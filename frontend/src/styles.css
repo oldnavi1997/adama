@@ -15,7 +15,7 @@
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -25,7 +25,7 @@ body {
   line-height: var(--lh-body);
   background: #ffffff;
   color: #1f2937;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 h1,
@@ -97,13 +97,14 @@ button {
 }
 
 header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
   background: #ffffff;
   color: #111827;
   border-bottom: 1px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 100;
   overflow: visible;
+  box-shadow: 0 1px 0 0 #e5e7eb;
 }
 
 header .container {
@@ -129,7 +130,7 @@ header nav {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 140;
+  z-index: 250;
 }
 
 .mobile-menu-overlay.open {
@@ -187,7 +188,7 @@ header nav {
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
   transform: translateX(100%);
   transition: transform 0.24s ease;
-  z-index: 160;
+  z-index: 260;
   overflow: hidden;
   padding: 14px 14px 20px;
   display: flex;
@@ -1692,7 +1693,7 @@ header nav {
     box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
     transform: translateX(-100%);
     transition: transform 0.24s ease;
-    z-index: 150;
+    z-index: 260;
     overflow-y: auto;
     padding: 14px 14px 20px;
   }
