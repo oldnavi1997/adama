@@ -37,6 +37,7 @@ export function CategoryPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const pageSize = 12;
@@ -58,9 +59,11 @@ export function CategoryPage() {
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   useEffect(() => {
+    setCategoriesLoading(true);
     api<PublicCategory[]>("/products/categories/public")
       .then((res) => setCategories(res))
-      .catch(() => setCategories([]));
+      .catch(() => setCategories([]))
+      .finally(() => setCategoriesLoading(false));
   }, []);
 
   useEffect(() => {
@@ -103,6 +106,14 @@ export function CategoryPage() {
       setError((err as Error).message);
     });
   }, [currentCategory, page, sortBy]);
+
+  if (categoriesLoading) {
+    return (
+      <section>
+        <p>Cargando categoría…</p>
+      </section>
+    );
+  }
 
   if (!currentCategory) {
     return (

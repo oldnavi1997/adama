@@ -155,47 +155,47 @@ export function CatalogPage() {
           </div>
         ))}
       </section>
-
-      <div id="productos" className="catalog-hero">
-        <h2 className="catalog-hero-title">Productos recientemente agregados</h2>
-      </div>
-
-      <div className="product-slider">
-        <button type="button" className="product-slider__nav product-slider__nav--prev" onClick={() => slide("prev")} aria-label="Anterior">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-        <div className="product-slider__track" ref={sliderRef}>
-          {recentProducts.length === 0 ? (
-            <p className="product-slider__empty">No hay productos recientes.</p>
-          ) : (
-            recentProducts.map((p) => (
-              <article key={p.id} className="card catalog-card product-slider__card">
-                {(p.imageUrl || p.imageUrls?.[0]) && (
-                  <Link to={productDetailPath(p)}>
-                    <img src={p.imageUrl || p.imageUrls?.[0]} alt={p.name} className="catalog-image" />
-                  </Link>
-                )}
-                {p.category && (
-                  <p className="catalog-category">
-                    <Link to={`/categoria/${slugify(p.category)}`}>{p.category}</Link>
-                  </p>
-                )}
-                <h3>
-                  <Link to={productDetailPath(p)}>{p.name}</Link>
-                </h3>
-                <p className="catalog-price">S/ {Number(p.price).toFixed(2)}</p>
-              </article>
-            ))
-          )}
+      <section className="home-products" aria-label="Productos recientes">
+        <div id="productos" className="catalog-hero">
+          <h2 className="catalog-hero-title">Productos recientemente agregados</h2>
         </div>
-        <button type="button" className="product-slider__nav product-slider__nav--next" onClick={() => slide("next")} aria-label="Siguiente">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 12l6 6-6 6" />
-          </svg>
-        </button>
-      </div>
+        <div className="product-slider">
+          <button type="button" className="product-slider__nav product-slider__nav--prev" onClick={() => slide("prev")} aria-label="Anterior">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <div className="product-slider__track" ref={sliderRef}>
+            {recentProducts.length === 0 ? (
+              <p className="product-slider__empty">No hay productos recientes.</p>
+            ) : (
+              recentProducts.map((p) => (
+                <article key={p.id} className="card catalog-card product-slider__card">
+                  {(p.imageUrl || p.imageUrls?.[0]) && (
+                    <Link to={productDetailPath(p)}>
+                      <img src={p.imageUrl || p.imageUrls?.[0]} alt={p.name} className="catalog-image" />
+                    </Link>
+                  )}
+                  {p.category && (
+                    <p className="catalog-category">
+                      <Link to={`/categoria/${slugify(p.category)}`}>{p.category}</Link>
+                    </p>
+                  )}
+                  <h3>
+                    <Link to={productDetailPath(p)}>{p.name}</Link>
+                  </h3>
+                  <p className="catalog-price">S/ {Number(p.price).toFixed(2)}</p>
+                </article>
+              ))
+            )}
+          </div>
+          <button type="button" className="product-slider__nav product-slider__nav--next" onClick={() => slide("next")} aria-label="Siguiente">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 12l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+      </section>
     </section>
   );
 }
