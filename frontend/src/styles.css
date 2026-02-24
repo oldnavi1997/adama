@@ -1219,11 +1219,13 @@ header nav {
 
 .home-hero {
   position: relative;
-  left: 50%;
-  margin-left: -50vw;
-  width: 100vw;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;
+  left: 50% !important;
+  right: auto !important;
+  margin-left: -50vw !important;
+  width: 100vw !important;
+  min-height: 80vh !important;
+  height: auto !important;
+  max-width: none !important;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1293,8 +1295,8 @@ header nav {
 @media (max-width: 640px) {
   .home-hero {
     min-height: 500px;
-    justify-content: center;
-    align-items: flex-start;
+    justify-content: flex-end;
+    align-items: center;
     background-position: center center;
     background-image: url("https://adamantio.pe/wp-content/uploads/2025/02/Mobile_Hero_resultado.webp");
   }
@@ -1448,6 +1450,93 @@ header nav {
   color: #111827;
 }
 
+.product-slider {
+  position: relative;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.product-slider__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: #374151;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.product-slider__nav:hover {
+  background: #f3f4f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-slider__nav--prev {
+  left: 8px;
+}
+
+.product-slider__nav--next {
+  right: 8px;
+}
+
+.product-slider__track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  padding: 4px 48px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.product-slider__track::-webkit-scrollbar {
+  height: 8px;
+}
+
+.product-slider__track::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.product-slider__card {
+  flex: 0 0 220px;
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.product-slider__empty {
+  margin: 0;
+  padding: 1rem;
+  color: #6b7280;
+}
+
+@media (max-width: 768px) {
+  .product-slider__nav {
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+  }
+  .product-slider__track {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .catalog-toolbar {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -1510,6 +1599,13 @@ header nav {
   height: 220px;
   object-fit: cover;
   border-radius: 6px;
+}
+
+/* CategoryPage: imágenes de productos en proporción 1:1 */
+.category-products-grid .catalog-image {
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: cover;
 }
 
 .catalog-category {
