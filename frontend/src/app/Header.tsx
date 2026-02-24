@@ -1,12 +1,6 @@
 import { Link } from "react-router-dom";
-
-export type PublicCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  count: number;
-  children: PublicCategory[];
-};
+import type { PublicCategory } from "./publicCategories";
+export type { PublicCategory } from "./publicCategories";
 
 function CategoryMenuItem({ category }: { category: PublicCategory }) {
   const hasChildren = category.children.length > 0;

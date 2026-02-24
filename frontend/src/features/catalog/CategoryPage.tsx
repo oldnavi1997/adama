@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../app/api";
 import { productDetailPath } from "../../app/slug";
+import {
+  fetchPublicCategories,
+  getCachedPublicCategories,
+  type PublicCategory
+} from "../../app/publicCategories";
 
 type Product = {
   id: string;
@@ -21,23 +26,15 @@ type ProductsResponse = {
   total: number;
 };
 
-type PublicCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  count: number;
-  children: PublicCategory[];
-};
-
 export function CategoryPage() {
   const { categorySlug } = useParams();
-  const [categories, setCategories] = useState<PublicCategory[]>([]);
+  const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
   const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(!getCachedPublicCategories());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const pageSize = 12;
@@ -59,8 +56,15 @@ export function CategoryPage() {
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   useEffect(() => {
+    const cached = getCachedPublicCategories();
+    if (cached) {
+      setCategories(cached);
+      setCategoriesLoading(false);
+      return;
+    }
+
     setCategoriesLoading(true);
-    api<PublicCategory[]>("/products/categories/public")
+    fetchPublicCategories(api)
       .then((res) => setCategories(res))
       .catch(() => setCategories([]))
       .finally(() => setCategoriesLoading(false));

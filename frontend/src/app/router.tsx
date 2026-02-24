@@ -12,6 +12,7 @@ import { useCartStore } from "../features/cart/cart.store";
 import { api } from "./api";
 import { Footer } from "./Footer";
 import { Header, type PublicCategory } from "./Header";
+import { fetchPublicCategories, getCachedPublicCategories } from "./publicCategories";
 import { TerminosDeServicioPage } from "./legal/TerminosDeServicioPage";
 import { PoliticaReembolsosPage } from "./legal/PoliticaReembolsosPage";
 import { PoliticaPrivacidadPage } from "./legal/PoliticaPrivacidadPage";
@@ -56,7 +57,7 @@ function MobileCategoryItem({
 }
 
 function Layout() {
-  const [categories, setCategories] = useState<PublicCategory[]>([]);
+  const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const location = useLocation();
@@ -65,7 +66,7 @@ function Layout() {
   const cartTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   useEffect(() => {
-    api<PublicCategory[]>("/products/categories/public")
+    fetchPublicCategories(api)
       .then((res) => setCategories(res))
       .catch(() => setCategories([]));
   }, []);

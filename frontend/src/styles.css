@@ -1601,6 +1601,13 @@ header nav {
   font-size: 12px;
 }
 
+/* CategoryPage desktop container (avoid full-screen stretch) */
+.category-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .category-view-tabs {
   display: none;
   margin: 0;
@@ -1679,6 +1686,11 @@ header nav {
   object-fit: cover;
 }
 
+/* CategoryPage desktop: 4 products per row */
+.category-products--grid .category-products-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 /* CatalogPage slider: imágenes 1:1 */
 .product-slider__track .catalog-image {
   aspect-ratio: 1 / 1;
@@ -1729,6 +1741,10 @@ header nav {
 
   .catalog-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .category-products--grid .category-products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .brand-logo {
