@@ -10,6 +10,11 @@ import { CheckoutFailurePage } from "../features/checkout/CheckoutFailurePage";
 import { CheckoutPendingPage } from "../features/checkout/CheckoutPendingPage";
 import { useCartStore } from "../features/cart/cart.store";
 import { api } from "./api";
+import { Footer } from "./Footer";
+import { TerminosDeServicioPage } from "./legal/TerminosDeServicioPage";
+import { PoliticaReembolsosPage } from "./legal/PoliticaReembolsosPage";
+import { PoliticaPrivacidadPage } from "./legal/PoliticaPrivacidadPage";
+import { LibroReclamacionesPage } from "./legal/LibroReclamacionesPage";
 
 type PublicCategory = {
   id: string;
@@ -111,7 +116,7 @@ function Layout() {
   }, [isMobileMenuOpen, isCartDrawerOpen]);
 
   return (
-    <>
+    <div className="layout-wrap">
       <header>
         <div className="container row" style={{ justifyContent: "space-between", paddingBlock: 12 }}>
           <button
@@ -302,7 +307,8 @@ function Layout() {
       <main className="container">
         <Outlet />
       </main>
-    </>
+      <Footer />
+    </div>
   );
 }
 
@@ -319,7 +325,11 @@ export const router = createBrowserRouter([
       { path: "checkout", element: <CheckoutPage /> },
       { path: "checkout/success", element: <CheckoutSuccessPage /> },
       { path: "checkout/failure", element: <CheckoutFailurePage /> },
-      { path: "checkout/pending", element: <CheckoutPendingPage /> }
+      { path: "checkout/pending", element: <CheckoutPendingPage /> },
+      { path: "terminos-de-servicio", element: <TerminosDeServicioPage /> },
+      { path: "politica-de-reembolsos", element: <PoliticaReembolsosPage /> },
+      { path: "politica-de-privacidad", element: <PoliticaPrivacidadPage /> },
+      { path: "libro-de-reclamaciones", element: <LibroReclamacionesPage /> }
     ]
   }
 ]);
