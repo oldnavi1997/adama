@@ -34,6 +34,7 @@ export function CategoryPage() {
   const [categories, setCategories] = useState<PublicCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("latest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -126,12 +127,55 @@ export function CategoryPage() {
           <option value="name-asc">Nombre: A-Z</option>
           <option value="name-desc">Nombre: Z-A</option>
         </select>
+        <ul className="category-view-tabs" role="tablist" aria-label="Vista de productos">
+          <li>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === "grid"}
+              aria-label="Cuadrícula 2 columnas"
+              className={viewMode === "grid" ? "active" : ""}
+              onClick={() => setViewMode("grid")}
+            >
+              <span className="category-view-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                </svg>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === "list"}
+              aria-label="Lista 1 producto"
+              className={viewMode === "list" ? "active" : ""}
+              onClick={() => setViewMode("list")}
+            >
+              <span className="category-view-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+              </span>
+            </button>
+          </li>
+        </ul>
       </div>
 
       {loading && <p>Cargando productos...</p>}
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
-      <div className="grid" style={{ marginTop: 12 }}>
+      <div className={`category-products category-products--${viewMode}`}>
+      <div className="grid category-products-grid" style={{ marginTop: 12 }}>
         {products.map((product) => (
           <article key={product.id} className="card catalog-card">
             {(product.imageUrl || product.imageUrls?.[0]) && (
@@ -145,6 +189,7 @@ export function CategoryPage() {
             <p className="catalog-price">S/ {Number(product.price).toFixed(2)}</p>
           </article>
         ))}
+      </div>
       </div>
 
       {totalPages > 1 && (

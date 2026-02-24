@@ -76,7 +76,6 @@ export function CheckoutPage() {
   });
   const [courier, setCourier] = useState<"shalom" | "olva">("shalom");
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const hasFreeShipping = subtotal >= 299;
   const shippingCost =
     courier === "shalom" ? SHALOM_PRICE : OLVA_PRICE_BY_DEPARTMENT[address.state] ?? 15;
   const beforeCommission = subtotal + shippingCost;
@@ -194,15 +193,6 @@ export function CheckoutPage() {
             </div>
           ) : (
             <>
-              <div className="checkout-shipping-banner">
-                <span aria-hidden="true">🚚</span>
-                <p>
-                  {hasFreeShipping
-                    ? "Felicidades, ya tienes envio gratis."
-                    : "Te faltan compras para obtener envio gratis."}
-                </p>
-              </div>
-
               <div className="card checkout-block">
                 <h2>Identificacion</h2>
                 <p className="checkout-note">

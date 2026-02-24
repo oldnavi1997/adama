@@ -1166,13 +1166,13 @@ header nav {
 }
 
 .product-page-premium .product-summary h1 {
-  font-size: 1.45rem;
+  font-size: 20px;
   line-height: 1.3;
   color: #111827;
 }
 
 .product-price {
-  font-size: 1.9rem;
+  font-size: 22px;
   font-weight: 700;
   margin: 0;
   color: #111827;
@@ -1207,8 +1207,236 @@ header nav {
   margin: 0;
 }
 
-.catalog-hero h1 {
+/* Home page (Catalog as main) */
+.home-page {
+  padding-bottom: 2rem;
+}
+
+.home-hero {
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+  width: 100vw;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 2.5rem 1rem;
+  background-image: url("https://adamantio.pe/wp-content/uploads/2025/02/Hero_Image_Final_resultado-2048x1152-1.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+}
+
+.home-hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.home-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  text-align: right;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-right: 100px;
+}
+
+.home-hero-title {
+  font-size: 80px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #111827;
+  margin: 0 0 0.6rem;
+  letter-spacing: 0.01em;
+  border: none;
+  box-sizing: content-box;
+}
+
+.home-hero-subtitle {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #374151;
+  margin: 0 0 1.25rem;
+  font-weight: 400;
+}
+
+.home-hero-cta {
+  display: inline-block;
+  padding: 0.65rem 1.35rem;
+  background: #374151;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.home-hero-cta:hover {
+  background: #111827;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .home-hero {
+    min-height: 500px;
+    justify-content: center;
+    align-items: flex-start;
+    background-position: center center;
+    background-image: url("https://adamantio.pe/wp-content/uploads/2025/02/Mobile_Hero_resultado.webp");
+  }
+  .home-hero-content {
+    text-align: center;
+    max-width: 100%;
+    margin-top: 0;
+    padding-top: 1.5rem;
+  }
+  .home-hero-title {
+    font-size: 50px;
+  }
+}
+
+.home-intro {
+  text-align: center;
+  padding: 2.5rem 1rem 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.home-intro-title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111827;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.home-intro-subtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #4b5563;
+  margin: 0 0 1.5rem;
+}
+
+.home-intro-cta {
+  display: inline-block;
+  padding: 0.6rem 1.25rem;
+  background: #111827;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.home-intro-cta:hover {
+  background: #374151;
+  color: #fff;
+}
+
+.home-value {
+  padding: 2rem 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.home-value-heading {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1.5rem;
+}
+
+.home-value-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.home-value-block {
+  text-align: center;
+  padding: 1rem;
+}
+
+.home-value-block h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+
+.home-value-block p {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #6b7280;
+  margin: 0;
+}
+
+.home-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  padding: 2rem 0;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.home-category-card {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.home-category-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem;
+}
+
+.home-category-desc {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #4b5563;
+  margin: 0 0 1rem;
+}
+
+.home-category-cta {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.home-category-cta:hover {
+  color: #374151;
+}
+
+.catalog-hero {
+  padding-top: 0.5rem;
+}
+
+.catalog-hero h1,
+.catalog-hero .catalog-hero-title {
   margin-bottom: 4px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
 }
 
 .catalog-toolbar {
@@ -1218,9 +1446,54 @@ header nav {
   align-items: center;
 }
 
+.category-view-tabs {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+}
+
+.category-view-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.category-view-tabs button:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.category-view-tabs button.active {
+  border-color: #111827;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.category-view-icon {
+  display: inline-flex;
+}
+
 .catalog-card {
   display: grid;
   gap: 8px;
+  text-align: center;
+}
+
+.catalog-card h3,
+.catalog-card h3 a {
+  font-size: 13px;
 }
 
 .catalog-image {
@@ -1237,9 +1510,10 @@ header nav {
 }
 
 .catalog-price {
-  font-size: 1.1rem;
+  font-size: 13px;
   font-weight: 700;
   margin: 0;
+  text-align: center;
 }
 
 @media (max-width: 900px) {
@@ -1515,5 +1789,37 @@ header nav {
   .cart-summary-card .cart-primary-btn,
   .cart-summary-card .cart-secondary-link {
     display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .category-view-tabs {
+    display: flex;
+  }
+
+  .catalog-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .category-products--list .category-products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-products--list .catalog-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .category-products--list .catalog-card .catalog-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .category-products--grid .category-products-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
