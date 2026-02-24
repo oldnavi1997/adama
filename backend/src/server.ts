@@ -4,6 +4,7 @@ import { env } from "./config/env.js";
 import { apiRouter } from "./routes/index.js";
 import { errorHandler } from "./middleware/error.js";
 import { renderBackendHome } from "./ui/backend-home.js";
+import { connectRedis } from "./lib/redis.js";
 
 const app = express();
 
@@ -47,6 +48,15 @@ app.use("/api", apiRouter);
 app.use(errorHandler);
 
 app.listen(env.port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${env.port}`);
+  connectRedis()
+    .then(() => {
+      // eslint-disable-next-line no-console
+      console.log(`API listening on http://localhost:${env.port}`);
+    })
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error("[redis] connect failed, continuing without redis features", error);
+      // eslint-disable-next-line no-console
+      console.log(`API listening on http://localhost:${env.port}`);
+    });
 });

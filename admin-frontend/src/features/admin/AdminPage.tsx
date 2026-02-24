@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../app/api";
+import { MediaManagerTab } from "./MediaManagerTab";
 
 type Product = {
   id: string;
@@ -39,38 +41,21 @@ type Order = {
 };
 
 export function AdminPage() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "orders">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "categories" | "orders" | "media">("products");
   const [productQuery, setProductQuery] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("");
   const [productPage, setProductPage] = useState(1);
   const [orderQuery, setOrderQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<"ALL" | Order["status"]>("ALL");
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryParentId, setNewCategoryParentId] = useState("");
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    stock: 0,
-    category: "",
-    imageUrl: "",
-    imageUrlsText: ""
-  });
-
-  const normalizedName = form.name.trim();
-  const normalizedDescription = form.description.trim();
-  const canCreateProduct = normalizedName.length >= 2 && normalizedDescription.length >= 2 && form.price > 0;
-  const parseGalleryInput = (value: string): string[] =>
-    value
-      .split(/\r?\n|,/)
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
 
   async function loadProducts() {
     const pageSize = 50;
@@ -113,70 +98,6 @@ export function AdminPage() {
       })
       .finally(() => setLoading(false));
   }, []);
-
-  async function createProduct(e: FormEvent) {
-    e.preventDefault();
-    if (!canCreateProduct) {
-      setError("Completa los campos requeridos: nombre (min 2), descripcion (min 2) y precio mayor a 0.");
-      return;
-    }
-
-    try {
-      setError("");
-      await api("/products", {
-        method: "POST",
-        auth: true,
-        body: JSON.stringify({
-          ...form,
-          imageUrls: parseGalleryInput(form.imageUrlsText),
-          name: normalizedName,
-          description: normalizedDescription
-        })
-      });
-      setForm({ name: "", description: "", price: 0, stock: 0, category: "", imageUrl: "", imageUrlsText: "" });
-      await loadProducts();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }
-
-  async function updateProduct(product: Product) {
-    try {
-      setError("");
-      await api(`/products/${product.id}`, {
-        method: "PUT",
-        auth: true,
-        body: JSON.stringify({
-          name: product.name,
-          description: product.description,
-          price: Number(product.price),
-          stock: product.stock,
-          category: product.category ?? "",
-          imageUrl: product.imageUrl ?? "",
-          imageUrls: product.imageUrls ?? [],
-          isActive: product.isActive
-        })
-      });
-      setEditingId(null);
-      await loadProducts();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }
-
-  async function toggleProductStatus(product: Product) {
-    try {
-      setError("");
-      await api(`/products/${product.id}/status`, {
-        method: "PATCH",
-        auth: true,
-        body: JSON.stringify({ isActive: !product.isActive })
-      });
-      await loadProducts();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }
 
   async function updateOrderStatus(orderId: string, status: Order["status"]) {
     try {
@@ -250,9 +171,11 @@ export function AdminPage() {
   }
 
   const visibleProducts = products.filter((product) => {
+    const matchesCategory =
+      !productCategoryFilter || (product.category ?? "") === productCategoryFilter;
     const query = productQuery.trim().toLowerCase();
-    if (!query) return true;
-    return [product.name, product.description, product.category ?? ""].some((v) => v.toLowerCase().includes(query));
+    const matchesQuery = !query || [product.name, product.description, product.category ?? ""].some((v) => v.toLowerCase().includes(query));
+    return matchesCategory && matchesQuery;
   });
 
   const productsPerPage = 12;
@@ -266,7 +189,7 @@ export function AdminPage() {
 
   useEffect(() => {
     setProductPage(1);
-  }, [productQuery]);
+  }, [productQuery, productCategoryFilter]);
 
   useEffect(() => {
     if (productPage > totalProductPages) {
@@ -301,6 +224,9 @@ export function AdminPage() {
         <button onClick={() => setActiveTab("orders")} disabled={activeTab === "orders"}>
           Ordenes
         </button>
+        <button onClick={() => setActiveTab("media")} disabled={activeTab === "media"}>
+          Medios
+        </button>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -309,172 +235,102 @@ export function AdminPage() {
         <p>Cargando panel...</p>
       ) : activeTab === "products" ? (
         <>
-          <form className="card admin-form" onSubmit={createProduct}>
-            <h3>Nuevo producto</h3>
-            <div className="grid">
-              <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Nombre" />
-              <input
-                value={form.description}
-                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descripcion"
-              />
-              <input
-                type="number"
-                step="0.01"
-                min={0.01}
-                value={form.price}
-                onChange={(e) => {
-                  const value = e.currentTarget.valueAsNumber;
-                  setForm((p) => ({ ...p, price: Number.isFinite(value) ? value : 0 }));
-                }}
-                placeholder="Precio"
-              />
-              <input
-                type="number"
-                min={0}
-                value={form.stock}
-                onChange={(e) => {
-                  const value = e.currentTarget.valueAsNumber;
-                  setForm((p) => ({ ...p, stock: Number.isFinite(value) ? value : 0 }));
-                }}
-                placeholder="Stock"
-              />
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}>
-                <option value="">Sin categoria</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.name}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              <input value={form.imageUrl} onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))} placeholder="Imagen URL" />
-              <input
-                value={form.imageUrlsText}
-                onChange={(e) => setForm((p) => ({ ...p, imageUrlsText: e.target.value }))}
-                placeholder="Galeria URLs (separadas por coma o salto de linea)"
-              />
-            </div>
-            <button type="submit" disabled={!canCreateProduct}>
-              Crear producto
+          <div className="row" style={{ justifyContent: "space-between", marginBottom: 8 }}>
+            <h3 style={{ margin: 0 }}>Productos</h3>
+            <button type="button" onClick={() => navigate("/products/new")}>
+              Añadir nuevo
             </button>
-          </form>
+          </div>
 
-          <div className="row" style={{ marginTop: 12, marginBottom: 10 }}>
+          <div className="row" style={{ marginTop: 12, marginBottom: 6, flexWrap: "wrap", gap: 10 }}>
             <input
               value={productQuery}
               onChange={(e) => setProductQuery(e.target.value)}
               placeholder="Buscar por nombre, descripcion o categoria"
-              style={{ minWidth: 320 }}
+              style={{ minWidth: 280 }}
             />
+            <select
+              value={productCategoryFilter}
+              onChange={(e) => setProductCategoryFilter(e.target.value)}
+              style={{ minWidth: 180 }}
+              title="Filtrar por categoría"
+            >
+              <option value="">Todas las categorías</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="row admin-category-pills" style={{ marginBottom: 10, flexWrap: "wrap", gap: 6 }}>
+            <button
+              type="button"
+              onClick={() => setProductCategoryFilter("")}
+              className={productCategoryFilter === "" ? "active" : ""}
+            >
+              Todas
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => setProductCategoryFilter(category.name)}
+                className={productCategoryFilter === category.name ? "active" : ""}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
 
-          <div className="grid">
-            {paginatedProducts.map((product) => {
-              const isEditing = editingId === product.id;
-              const previewImage = product.imageUrl || product.imageUrls?.[0] || "";
-              const galleryUrls = product.imageUrls ?? [];
-              return (
-                <article key={product.id} className="card">
-                  {previewImage && (
-                    <img src={previewImage} alt={product.name} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 6 }} />
-                  )}
-                  {galleryUrls.length > 0 && (
-                    <div className="admin-gallery-preview">
-                      {galleryUrls.slice(0, 6).map((url, index) => (
-                        <img key={`${product.id}-gallery-${index}`} src={url} alt={`${product.name} ${index + 1}`} />
-                      ))}
-                    </div>
-                  )}
-                  <input
-                    disabled={!isEditing}
-                    value={product.name}
-                    onChange={(e) =>
-                      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, name: e.target.value } : p)))
-                    }
-                    style={{ marginTop: 8, width: "100%" }}
-                  />
-                  <input
-                    disabled={!isEditing}
-                    value={product.description}
-                    onChange={(e) =>
-                      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, description: e.target.value } : p)))
-                    }
-                    style={{ marginTop: 8, width: "100%" }}
-                  />
-                  <input
-                    disabled={!isEditing}
-                    value={product.imageUrl ?? ""}
-                    onChange={(e) =>
-                      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, imageUrl: e.target.value } : p)))
-                    }
-                    style={{ marginTop: 8, width: "100%" }}
-                    placeholder="Imagen principal URL"
-                  />
-                  <textarea
-                    disabled={!isEditing}
-                    value={galleryUrls.join("\n")}
-                    onChange={(e) =>
-                      setProducts((prev) =>
-                        prev.map((p) =>
-                          p.id === product.id ? { ...p, imageUrls: parseGalleryInput(e.target.value) } : p
-                        )
-                      )
-                    }
-                    style={{ marginTop: 8, width: "100%", minHeight: 92, resize: "vertical" }}
-                    placeholder="Galeria URLs (una por linea o separadas por coma)"
-                  />
-                  <div className="row" style={{ marginTop: 8 }}>
-                    <input
-                      disabled={!isEditing}
-                      type="number"
-                      step="0.01"
-                      value={Number(product.price)}
-                      onChange={(e) =>
-                        setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, price: String(Number(e.target.value)) } : p)))
-                      }
-                      style={{ width: 110 }}
-                    />
-                    <input
-                      disabled={!isEditing}
-                      type="number"
-                      value={product.stock}
-                      onChange={(e) =>
-                        setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, stock: Number(e.target.value) } : p)))
-                      }
-                      style={{ width: 90 }}
-                    />
-                    <select
-                      disabled={!isEditing}
-                      value={product.category ?? ""}
-                      onChange={(e) =>
-                        setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, category: e.target.value || null } : p)))
-                      }
+          <div className="card" style={{ overflowX: "auto" }}>
+            <table className="admin-products-table">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Categoría</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedProducts.map((product) => {
+                  const previewImage = product.imageUrl || product.imageUrls?.[0] || "";
+                  return (
+                    <tr
+                      key={product.id}
+                      className="admin-products-row"
+                      onClick={() => navigate(`/products/${product.id}`)}
                     >
-                      <option value="">Sin categoria</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.name}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <p style={{ marginBottom: 6 }}>Estado: {product.isActive ? "ACTIVO" : "INACTIVO"}</p>
-                  <div className="row">
-                    {isEditing ? (
-                      <>
-                        <button onClick={() => updateProduct(product)}>Guardar</button>
-                        <button onClick={() => setEditingId(null)}>Cancelar</button>
-                      </>
-                    ) : (
-                      <button onClick={() => setEditingId(product.id)}>Editar</button>
-                    )}
-                    <button onClick={() => toggleProductStatus(product)}>
-                      {product.isActive ? "Desactivar" : "Reactivar"}
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+                      <td>
+                        {previewImage ? (
+                          <img src={previewImage} alt="" className="admin-products-thumb" />
+                        ) : (
+                          <span className="admin-products-no-thumb">—</span>
+                        )}
+                      </td>
+                      <td className="admin-products-name">{product.name}</td>
+                      <td>S/ {Number(product.price).toFixed(2)}</td>
+                      <td>{product.category ?? "—"}</td>
+                      <td>{product.stock}</td>
+                      <td>
+                        <span className={product.isActive ? "admin-status-active" : "admin-status-inactive"}>
+                          {product.isActive ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <button type="button" onClick={() => navigate(`/products/${product.id}`)}>
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
           <div className="row" style={{ marginTop: 12 }}>
             {productPageNumbers.map((page) => (
@@ -564,6 +420,8 @@ export function AdminPage() {
             })}
           </div>
         </section>
+      ) : activeTab === "media" ? (
+        <MediaManagerTab />
       ) : (
         <section className="card">
           <h3>Ordenes</h3>

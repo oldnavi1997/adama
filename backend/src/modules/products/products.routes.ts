@@ -6,8 +6,13 @@ import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { validateBody } from "../../middleware/validate.js";
 import { productSchema } from "./products.schema.js";
 import { verifyAccessToken } from "../../lib/auth.js";
+import { redisDeleteByPrefix, redisGetString, redisSetExString } from "../../lib/redis.js";
 
 export const productsRouter = Router();
+const PRODUCTS_CACHE_PREFIX = "cache:products:list:";
+const CATEGORIES_PUBLIC_CACHE_PREFIX = "cache:products:categories:public:";
+const PRODUCTS_CACHE_TTL_SECONDS = 60;
+const CATEGORIES_CACHE_TTL_SECONDS = 120;
 
 type CategoryRow = { id: string; name: string; parent_id: string | null; parent_name: string | null };
 type CategoryNameRow = { id: string; name: string };
@@ -110,6 +115,27 @@ productsRouter.get("/", async (req, res) => {
     }
   }
 
+  const cacheKey =
+    !includeInactive &&
+    !isAdmin &&
+    JSON.stringify({
+      page,
+      pageSize,
+      search,
+      category,
+      sortBy,
+      categories
+    });
+
+  if (cacheKey) {
+    const cached = await redisGetString(`${PRODUCTS_CACHE_PREFIX}${cacheKey}`);
+    if (cached) {
+      res.setHeader("x-cache", "HIT");
+      res.json(JSON.parse(cached));
+      return;
+    }
+  }
+
   const productWhere = {
     ...(includeInactive && isAdmin ? {} : { isActive: true }),
     ...(search
@@ -141,10 +167,23 @@ productsRouter.get("/", async (req, res) => {
 
   const total = await prisma.product.count({ where: productWhere });
 
-  res.json({ data: products, page, pageSize, total });
+  const payload = { data: products, page, pageSize, total };
+  if (cacheKey) {
+    await redisSetExString(`${PRODUCTS_CACHE_PREFIX}${cacheKey}`, PRODUCTS_CACHE_TTL_SECONDS, JSON.stringify(payload));
+    res.setHeader("x-cache", "MISS");
+  }
+  res.json(payload);
 });
 
 productsRouter.get("/categories/public", async (_req, res) => {
+  const cacheKey = `${CATEGORIES_PUBLIC_CACHE_PREFIX}v1`;
+  const cached = await redisGetString(cacheKey);
+  if (cached) {
+    res.setHeader("x-cache", "HIT");
+    res.json(JSON.parse(cached));
+    return;
+  }
+
   await syncCategoriesFromProducts();
 
   const categories = await prisma.$queryRaw<Array<CategoryRow>>`
@@ -189,7 +228,10 @@ productsRouter.get("/categories/public", async (_req, res) => {
     });
   };
 
-  res.json(buildTree(null));
+  const payload = buildTree(null);
+  await redisSetExString(cacheKey, CATEGORIES_CACHE_TTL_SECONDS, JSON.stringify(payload));
+  res.setHeader("x-cache", "MISS");
+  res.json(payload);
 });
 
 productsRouter.get("/categories", requireAuth, requireRole(UserRole.ADMIN), async (_req, res) => {
@@ -228,6 +270,10 @@ productsRouter.post("/categories", requireAuth, requireRole(UserRole.ADMIN), asy
 
   const id = crypto.randomUUID();
   await prisma.$executeRaw`INSERT INTO categories (id, name, parent_id) VALUES (${id}, ${name}, ${parentId})`;
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
   res.status(201).json({ id, name, parentId });
 });
 
@@ -275,6 +321,10 @@ productsRouter.patch("/categories/:id", requireAuth, requireRole(UserRole.ADMIN)
       data: { category: name }
     })
   ]);
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
 
   res.json({ id, name, parentId });
 });
@@ -296,6 +346,10 @@ productsRouter.delete("/categories/:id", requireAuth, requireRole(UserRole.ADMIN
       data: { category: null }
     }),
     prisma.$executeRaw`DELETE FROM categories WHERE id = ${id}`
+  ]);
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
   ]);
 
   res.status(204).send();
@@ -322,6 +376,10 @@ productsRouter.post("/", requireAuth, requireRole(UserRole.ADMIN), validateBody(
       price: payload.price.toFixed(2)
     }
   });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
   res.status(201).json(product);
 });
 
@@ -338,6 +396,10 @@ productsRouter.put("/:id", requireAuth, requireRole(UserRole.ADMIN), validateBod
       price: payload.price.toFixed(2)
     }
   });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
   res.json(product);
 });
 
@@ -347,5 +409,9 @@ productsRouter.patch("/:id/status", requireAuth, requireRole(UserRole.ADMIN), as
     where: { id: req.params.id },
     data: { isActive }
   });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
   res.json(product);
 });

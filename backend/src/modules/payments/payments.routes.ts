@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { prisma } from "../../lib/prisma.js";
 import { env } from "../../config/env.js";
 import { getPaymentById } from "./mercadopago.js";
+import { redisSetNxEx } from "../../lib/redis.js";
 
 export const paymentsRouter = Router();
 
@@ -76,6 +77,7 @@ paymentsRouter.post("/webhook", async (req, res) => {
 
     const event = req.body as { data?: { id?: string | number }; type?: string; action?: string };
     const maybePaymentId = event?.data?.id;
+    const requestId = String(req.headers["x-request-id"] ?? "");
 
     if (!maybePaymentId || event.type !== "payment") {
       if (env.logWebhookEvents) {
@@ -83,6 +85,17 @@ paymentsRouter.post("/webhook", async (req, res) => {
         console.log("[WEBHOOK] ignored non-payment event", { type: event.type, action: event.action, dataId: maybePaymentId });
       }
       res.status(200).json({ received: true });
+      return;
+    }
+
+    const eventKey = `idem:webhook:mp:${String(maybePaymentId)}:${requestId}`;
+    const accepted = await redisSetNxEx(eventKey, "1", 60 * 60 * 6);
+    if (!accepted) {
+      if (env.logWebhookEvents) {
+        // eslint-disable-next-line no-console
+        console.log("[WEBHOOK] deduplicated by redis key", { key: eventKey });
+      }
+      res.status(200).json({ idempotent: true });
       return;
     }
 

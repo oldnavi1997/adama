@@ -21,5 +21,10 @@ export const env = {
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? "15m",
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? "7d",
   mpAccessToken: process.env.MERCADOPAGO_ACCESS_TOKEN ?? "",
-  mpWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET ?? ""
+  mpWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET ?? "",
+  redisUrl: process.env.REDIS_URL ?? "",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "",
+  cloudinaryFolder: process.env.CLOUDINARY_FOLDER ?? "adama/products"
 };

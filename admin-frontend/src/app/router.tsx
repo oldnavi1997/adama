@@ -4,6 +4,8 @@ import { api } from "./api";
 import { LoginPage } from "../features/auth/LoginPage";
 import { useAuthStore } from "../features/auth/auth.store";
 import { AdminPage } from "../features/admin/AdminPage";
+import { ProductEditPage } from "../features/admin/ProductEditPage";
+import { ProductCreatePage } from "../features/admin/ProductCreatePage";
 
 type MeResponse = {
   id: string;
@@ -91,7 +93,11 @@ export const router = createBrowserRouter([
       { path: "login", element: <LoginGuard /> },
       {
         element: <AdminGuard />,
-        children: [{ index: true, element: <AdminPage /> }]
+        children: [
+          { index: true, element: <AdminPage /> },
+          { path: "products/new", element: <ProductCreatePage /> },
+          { path: "products/:productId", element: <ProductEditPage /> }
+        ]
       }
     ]
   }

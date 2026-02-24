@@ -11,10 +11,15 @@ import {
 import { validateBody } from "../../middleware/validate.js";
 import { loginSchema, refreshSchema, registerSchema } from "./auth.schema.js";
 import { requireAuth } from "../../middleware/auth.js";
+import { rateLimit } from "../../middleware/rateLimit.js";
 
 export const authRouter = Router();
 
-authRouter.post("/register", validateBody(registerSchema), async (req, res) => {
+authRouter.post(
+  "/register",
+  rateLimit({ keyPrefix: "rl:auth:register", windowSeconds: 60, maxRequests: 8 }),
+  validateBody(registerSchema),
+  async (req, res) => {
   const { email, password, fullName } = req.body;
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) {
@@ -50,9 +55,14 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res) => {
     accessToken,
     refreshToken
   });
-});
+  }
+);
 
-authRouter.post("/login", validateBody(loginSchema), async (req, res) => {
+authRouter.post(
+  "/login",
+  rateLimit({ keyPrefix: "rl:auth:login", windowSeconds: 60, maxRequests: 12 }),
+  validateBody(loginSchema),
+  async (req, res) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
@@ -81,9 +91,14 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res) => {
     accessToken,
     refreshToken
   });
-});
+  }
+);
 
-authRouter.post("/refresh", validateBody(refreshSchema), async (req, res) => {
+authRouter.post(
+  "/refresh",
+  rateLimit({ keyPrefix: "rl:auth:refresh", windowSeconds: 60, maxRequests: 20 }),
+  validateBody(refreshSchema),
+  async (req, res) => {
   const { refreshToken } = req.body;
   try {
     const payload = verifyRefreshToken(refreshToken);
@@ -98,7 +113,8 @@ authRouter.post("/refresh", validateBody(refreshSchema), async (req, res) => {
   } catch {
     res.status(401).json({ message: "Invalid refresh token" });
   }
-});
+  }
+);
 
 authRouter.get("/me", requireAuth, async (req, res) => {
   const user = await prisma.user.findUnique({

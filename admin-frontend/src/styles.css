@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap");
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --fs-h1: clamp(1.7rem, 2.9vw, 2.2rem);
   --fs-h2: clamp(1.3rem, 2.1vw, 1.7rem);
@@ -117,6 +121,11 @@ header {
   margin-bottom: 10px;
 }
 
+.admin-form-description {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
 .login-wrap {
   max-width: 420px;
   margin: 40px auto;
@@ -139,4 +148,220 @@ header {
   object-fit: cover;
   border-radius: 4px;
   border: 1px solid #e5e7eb;
+}
+
+.admin-category-pills button {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+
+.admin-category-pills button:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.admin-category-pills button.active {
+  border-color: #111827;
+  background: #111827;
+  color: #fff;
+}
+
+/* Productos: lista tipo WooCommerce */
+.admin-products-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.admin-products-table th,
+.admin-products-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-products-table th {
+  font-weight: 600;
+  color: #374151;
+  background: #f9fafb;
+}
+
+.admin-products-row {
+  cursor: pointer;
+}
+
+.admin-products-row:hover {
+  background: #f3f4f6;
+}
+
+.admin-products-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.admin-products-no-thumb {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.admin-products-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.admin-status-active {
+  color: #059669;
+  font-size: 0.875rem;
+}
+
+.admin-status-inactive {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.admin-back-btn {
+  background: transparent;
+  border: none;
+  color: #374151;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.admin-back-btn:hover {
+  color: #111827;
+  text-decoration: underline;
+}
+
+.admin-product-edit .admin-field-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.admin-product-edit .admin-field-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.admin-product-edit-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.admin-gallery-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+  display: grid;
+  gap: 8px;
+  cursor: grab;
+}
+
+.admin-gallery-card:active {
+  cursor: grabbing;
+}
+
+.admin-gallery-card.is-over {
+  border-color: #111827;
+  box-shadow: 0 0 0 1px #111827 inset;
+}
+
+.admin-gallery-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #f3f4f6;
+}
+
+.admin-gallery-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.admin-gallery-badge {
+  display: inline-block;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+}
+
+.admin-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.admin-media-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-media-preview {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #f3f4f6;
+}
+
+.admin-media-card.is-selected {
+  border-color: #111827;
+  box-shadow: 0 0 0 1px #111827 inset;
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.4);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-modal {
+  width: min(980px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* ClassicEditor: placeholder en modo visual */
+[contenteditable][data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
 }
