@@ -14,6 +14,10 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   font-family: "Jost", sans-serif;
@@ -21,6 +25,7 @@ body {
   line-height: var(--lh-body);
   background: #ffffff;
   color: #1f2937;
+  overflow-x: hidden;
 }
 
 h1,
@@ -1217,6 +1222,7 @@ header nav {
   left: 50%;
   margin-left: -50vw;
   width: 100vw;
+  max-width: 100%;
   aspect-ratio: 16 / 9;
   display: flex;
   align-items: center;
@@ -1297,9 +1303,12 @@ header nav {
     max-width: 100%;
     margin-top: 0;
     padding-top: 1.5rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
   }
   .home-hero-title {
     font-size: 50px;
+    word-wrap: break-word;
   }
 }
 
