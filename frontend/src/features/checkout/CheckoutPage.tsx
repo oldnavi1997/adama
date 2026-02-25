@@ -247,25 +247,27 @@ export function CheckoutPage() {
     setPaymentLoading(true);
     setError("");
     try {
-      const MercadoPagoSDK = (window as unknown as Record<string, unknown>).MercadoPago as
-        | (new (key: string) => Record<string, unknown>)
-        | undefined;
+      const requestId = crypto.randomUUID();
+      const tokenRes = await fetch(
+        `https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=${MP_PUBLIC_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phoneNumber: yapePhone.trim(),
+            otp: yapeOtp.trim(),
+            requestId
+          })
+        }
+      );
 
-      if (!MercadoPagoSDK) {
-        throw new Error("El SDK de Mercado Pago no se ha cargado correctamente. Recarga la página.");
+      if (!tokenRes.ok) {
+        const errBody = await tokenRes.text();
+        throw new Error(`Error al generar token Yape: ${errBody}`);
       }
 
-      const mp = new MercadoPagoSDK(MP_PUBLIC_KEY);
-      const yapeFn = mp.yape as (opts: { otp: string; phoneNumber: string }) => { create: () => Promise<{ id: string }> };
-
-      if (typeof yapeFn !== "function") {
-        throw new Error("La función Yape no está disponible en el SDK. Verifica tu configuración.");
-      }
-
-      const yape = yapeFn({ otp: yapeOtp.trim(), phoneNumber: yapePhone.trim() });
-      const tokenResult = await yape.create();
-
-      if (!tokenResult?.id) {
+      const tokenData = (await tokenRes.json()) as { id: string };
+      if (!tokenData?.id) {
         throw new Error("No se pudo generar el token de Yape. Verifica tu número y código OTP.");
       }
 
@@ -274,7 +276,7 @@ export function CheckoutPage() {
         body: JSON.stringify({
           orderId: orderCreated.orderId,
           formData: {
-            token: tokenResult.id,
+            token: tokenData.id,
             transaction_amount: orderCreated.amount,
             installments: 1,
             payment_method_id: "yape",
