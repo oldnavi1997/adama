@@ -437,7 +437,7 @@ export function CheckoutPage() {
                         paymentMethods: {
                           creditCard: "all",
                           debitCard: "all",
-                          mercadoPago: "all"
+                          mercadoPago: ["wallet_purchase"]
                         }
                       }}
                       onSubmit={async ({ formData }) => {
@@ -447,7 +447,6 @@ export function CheckoutPage() {
                       onError={(error) => {
                         // eslint-disable-next-line no-console
                         console.error("Payment Brick error:", error);
-                        setError("Error al cargar el formulario de pago.");
                       }}
                     />
                   </>
