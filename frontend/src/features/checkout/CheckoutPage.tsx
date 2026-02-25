@@ -260,7 +260,7 @@ export function CheckoutPage() {
       });
 
       if (res.status === "approved") {
-        navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}`);
+        navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}&payment_id=${res.payment_id}`);
       } else if (res.status === "rejected") {
         navigate("/checkout/failure");
       } else {
@@ -321,7 +321,7 @@ export function CheckoutPage() {
       });
 
       if (res.status === "approved") {
-        navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}`);
+        navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}&payment_id=${res.payment_id}`);
       } else if (res.status === "rejected") {
         setError(`Pago rechazado: ${res.status_detail}. Intenta de nuevo.`);
       } else {
@@ -337,6 +337,15 @@ export function CheckoutPage() {
 
   return (
     <section className="checkout-page">
+      {paymentLoading && (
+        <div className="checkout-processing-overlay">
+          <div className="checkout-processing-content">
+            <div className="checkout-spinner" />
+            <p>Procesando tu pago...</p>
+            <p className="muted">No cierres ni recargues esta página.</p>
+          </div>
+        </div>
+      )}
       <div className="checkout-layout">
         <div className="checkout-main">
           {items.length === 0 ? (
