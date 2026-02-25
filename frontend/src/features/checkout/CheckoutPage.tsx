@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { api } from "../../app/api";
 import { useCartStore } from "../cart/cart.store";
@@ -85,7 +85,42 @@ export function CheckoutPage() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "yape">("card");
   const [yapePhone, setYapePhone] = useState("");
-  const [yapeOtp, setYapeOtp] = useState("");
+  const [yapeOtpDigits, setYapeOtpDigits] = useState(["", "", "", "", "", ""]);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const yapeOtp = yapeOtpDigits.join("");
+
+  const handleOtpChange = useCallback((index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    setYapeOtpDigits((prev) => {
+      const next = [...prev];
+      next[index] = digit;
+      return next;
+    });
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  }, []);
+
+  const handleOtpKeyDown = useCallback((index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !yapeOtpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  }, [yapeOtpDigits]);
+
+  const handleOtpPaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+    const digits = pasted.split("");
+    setYapeOtpDigits((prev) => {
+      const next = [...prev];
+      digits.forEach((d, i) => { next[i] = d; });
+      return next;
+    });
+    const focusIdx = Math.min(digits.length, 5);
+    otpRefs.current[focusIdx]?.focus();
+  }, []);
 
   const mpInitialized = useRef(false);
   useEffect(() => {
@@ -535,40 +570,67 @@ export function CheckoutPage() {
                     )}
 
                     {paymentMethod === "yape" && (
-                      <div className="checkout-yape-form">
-                        <p className="checkout-payment-copy">
-                          Ingresa tu número de celular y el código de aprobación de 6 dígitos que aparece en tu app de Yape.
-                        </p>
-                        <div className="checkout-form-grid">
-                          <label className="checkout-field">
-                            <span>Número de celular</span>
-                            <input
-                              type="tel"
-                              value={yapePhone}
-                              onChange={(e) => setYapePhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-                              placeholder="999 999 999"
-                              maxLength={9}
-                            />
-                          </label>
-                          <label className="checkout-field">
-                            <span>Código OTP (Yape)</span>
-                            <input
-                              type="text"
-                              value={yapeOtp}
-                              onChange={(e) => setYapeOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                              placeholder="000000"
-                              maxLength={6}
-                            />
-                          </label>
+                      <div className="yape-card">
+                        <div className="yape-header">
+                          <svg className="yape-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="32" height="32" rx="8" fill="#742284"/>
+                            <text x="16" y="22" textAnchor="middle" fill="#fff" fontSize="16" fontWeight="700">Y</text>
+                          </svg>
+                          <div>
+                            <strong className="yape-title">Paga con Yape en pocos segundos</strong>
+                            <p className="yape-subtitle">Completa los siguientes datos y confirma tu compra.</p>
+                          </div>
                         </div>
+
+                        <label className="yape-field">
+                          <span className="yape-label">Celular asociado a Yape</span>
+                          <input
+                            type="tel"
+                            className="yape-input"
+                            value={yapePhone}
+                            onChange={(e) => setYapePhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                            placeholder="Ej.: 999 123 456"
+                            maxLength={9}
+                          />
+                        </label>
+
+                        <div className="yape-field">
+                          <span className="yape-label">Código de aprobación</span>
+                          <div className="yape-otp-row" onPaste={handleOtpPaste}>
+                            {yapeOtpDigits.map((digit, i) => (
+                              <input
+                                key={i}
+                                ref={(el) => { otpRefs.current[i] = el; }}
+                                type="text"
+                                inputMode="numeric"
+                                className="yape-otp-digit"
+                                value={digit}
+                                onChange={(e) => handleOtpChange(i, e.target.value)}
+                                onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                                maxLength={1}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="yape-info">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="8" cy="8" r="7.5" stroke="#009EE3" fill="#E8F4FD"/>
+                            <text x="8" y="12" textAnchor="middle" fill="#009EE3" fontSize="11" fontWeight="700">i</text>
+                          </svg>
+                          <span>Recuerda tener activada la opción &quot;Compras por internet&quot; en Yape y verificar tu límite diario.</span>
+                        </div>
+
                         <button
                           type="button"
-                          disabled={paymentLoading || !yapePhone.trim() || yapeOtp.trim().length !== 6}
+                          disabled={paymentLoading || !yapePhone.trim() || yapeOtp.length !== 6}
                           onClick={handleYapeSubmit}
-                          className="checkout-primary-btn checkout-yape-btn"
+                          className="yape-submit-btn"
                         >
                           {paymentLoading ? "Procesando..." : "Pagar con Yape"}
                         </button>
+
+                        <p className="yape-footer">Procesado por Mercado Pago</p>
                       </div>
                     )}
                   </>
