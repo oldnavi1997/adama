@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../app/api";
 import { productDetailPath } from "../../app/slug";
@@ -27,6 +27,8 @@ type ProductsResponse = {
 };
 
 export function CategoryPage() {
+  const topRef = useRef<HTMLDivElement>(null);
+  const prevPageRef = useRef(1);
   const { categorySlug } = useParams();
   const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
   const [products, setProducts] = useState<Product[]>([]);
@@ -111,6 +113,13 @@ export function CategoryPage() {
     });
   }, [currentCategory, page, sortBy]);
 
+  useEffect(() => {
+    if (!loading && page !== prevPageRef.current) {
+      prevPageRef.current = page;
+      topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [loading, page]);
+
   if (categoriesLoading) {
     return (
       <section>
@@ -130,7 +139,7 @@ export function CategoryPage() {
 
   return (
     <section className="category-page">
-      <div className="catalog-hero">
+      <div ref={topRef} className="catalog-hero">
         <h1>{currentCategory.name}</h1>
         <p className="muted">Mostrando {products.length} de {total} resultados</p>
       </div>
@@ -210,7 +219,11 @@ export function CategoryPage() {
       {totalPages > 1 && (
         <div className="row" style={{ marginTop: 12 }}>
           {pageNumbers.map((pageNumber) => (
-            <button key={pageNumber} onClick={() => setPage(pageNumber)} disabled={pageNumber === page}>
+            <button
+              key={pageNumber}
+              disabled={pageNumber === page}
+              onClick={() => setPage(pageNumber)}
+            >
               {pageNumber}
             </button>
           ))}
