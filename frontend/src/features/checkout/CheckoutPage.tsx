@@ -441,7 +441,7 @@ export function CheckoutPage() {
                         }
                       }}
                       onSubmit={async ({ formData }) => {
-                        await handlePaymentSubmit({ formData: formData as Record<string, unknown> });
+                        await handlePaymentSubmit({ formData: formData as unknown as Record<string, unknown> });
                       }}
                       onReady={() => {}}
                       onError={(error) => {
