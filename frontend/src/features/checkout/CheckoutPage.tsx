@@ -83,6 +83,9 @@ export function CheckoutPage() {
     amount: number;
   } | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "yape">("card");
+  const [yapePhone, setYapePhone] = useState("");
+  const [yapeOtp, setYapeOtp] = useState("");
 
   const mpInitialized = useRef(false);
   useEffect(() => {
@@ -230,6 +233,38 @@ export function CheckoutPage() {
       }
     } catch (e) {
       setError((e as Error).message);
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
+
+  async function handleYapeSubmit() {
+    if (!orderCreated) return;
+    if (!yapePhone.trim() || !yapeOtp.trim()) {
+      setError("Ingresa tu número de celular y el código OTP de Yape.");
+      return;
+    }
+    setPaymentLoading(true);
+    setError("");
+    try {
+      const mp = new (window as unknown as { MercadoPago: new (key: string) => {
+        yape: (opts: { otp: string; phoneNumber: string }) => { create: () => Promise<{ id: string }> };
+      } }).MercadoPago(MP_PUBLIC_KEY);
+
+      const yape = mp.yape({ otp: yapeOtp.trim(), phoneNumber: yapePhone.trim() });
+      const tokenResult = await yape.create();
+
+      const formData = {
+        token: tokenResult.id,
+        transaction_amount: orderCreated.amount,
+        installments: 1,
+        payment_method_id: "yape",
+        payer: { email: email.trim() }
+      };
+
+      await handlePaymentSubmit({ formData: formData as unknown as Record<string, unknown> });
+    } catch (e) {
+      setError((e as Error).message || "Error al procesar el pago con Yape.");
     } finally {
       setPaymentLoading(false);
     }
@@ -422,34 +457,90 @@ export function CheckoutPage() {
                     <div className="checkout-payment-tags">
                       <span>Tarjetas</span>
                       <span>Yape</span>
-                      <span>Efectivo</span>
                     </div>
                   </>
                 ) : (
                   <>
+                    <div className="checkout-payment-tabs">
+                      <button
+                        type="button"
+                        className={`checkout-payment-tab${paymentMethod === "card" ? " checkout-payment-tab--active" : ""}`}
+                        onClick={() => setPaymentMethod("card")}
+                      >
+                        Tarjeta
+                      </button>
+                      <button
+                        type="button"
+                        className={`checkout-payment-tab${paymentMethod === "yape" ? " checkout-payment-tab--active" : ""}`}
+                        onClick={() => setPaymentMethod("yape")}
+                      >
+                        Yape
+                      </button>
+                    </div>
+
                     {paymentLoading && <p className="checkout-hint">Procesando pago...</p>}
-                    <Payment
-                      initialization={{
-                        amount: orderCreated.amount,
-                        preferenceId: orderCreated.preferenceId
-                      }}
-                      customization={{
-                        paymentMethods: {
-                          creditCard: "all",
-                          debitCard: "all",
-                          bankTransfer: "all",
-                          mercadoPago: ["wallet_purchase"]
-                        }
-                      }}
-                      onSubmit={async ({ formData }) => {
-                        await handlePaymentSubmit({ formData: formData as unknown as Record<string, unknown> });
-                      }}
-                      onReady={() => {}}
-                      onError={(error) => {
-                        // eslint-disable-next-line no-console
-                        console.error("Payment Brick error:", error);
-                      }}
-                    />
+
+                    {paymentMethod === "card" && (
+                      <Payment
+                        initialization={{
+                          amount: orderCreated.amount,
+                          preferenceId: orderCreated.preferenceId
+                        }}
+                        customization={{
+                          paymentMethods: {
+                            creditCard: "all",
+                            debitCard: "all",
+                            mercadoPago: ["wallet_purchase"]
+                          }
+                        }}
+                        onSubmit={async ({ formData }) => {
+                          await handlePaymentSubmit({ formData: formData as unknown as Record<string, unknown> });
+                        }}
+                        onReady={() => {}}
+                        onError={(error) => {
+                          // eslint-disable-next-line no-console
+                          console.error("Payment Brick error:", error);
+                        }}
+                      />
+                    )}
+
+                    {paymentMethod === "yape" && (
+                      <div className="checkout-yape-form">
+                        <p className="checkout-payment-copy">
+                          Ingresa tu número de celular y el código de aprobación de 6 dígitos que aparece en tu app de Yape.
+                        </p>
+                        <div className="checkout-form-grid">
+                          <label className="checkout-field">
+                            <span>Número de celular</span>
+                            <input
+                              type="tel"
+                              value={yapePhone}
+                              onChange={(e) => setYapePhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                              placeholder="999 999 999"
+                              maxLength={9}
+                            />
+                          </label>
+                          <label className="checkout-field">
+                            <span>Código OTP (Yape)</span>
+                            <input
+                              type="text"
+                              value={yapeOtp}
+                              onChange={(e) => setYapeOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                              placeholder="000000"
+                              maxLength={6}
+                            />
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={paymentLoading || !yapePhone.trim() || yapeOtp.trim().length !== 6}
+                          onClick={handleYapeSubmit}
+                          className="checkout-primary-btn checkout-yape-btn"
+                        >
+                          {paymentLoading ? "Procesando..." : "Pagar con Yape"}
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

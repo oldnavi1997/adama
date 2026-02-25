@@ -699,6 +699,47 @@ header nav {
   color: #374151;
 }
 
+.checkout-payment-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.checkout-payment-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.checkout-payment-tab:not(:last-child) {
+  border-right: 1px solid #d1d5db;
+}
+
+.checkout-payment-tab--active {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.checkout-yape-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkout-yape-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
 .checkout-actions {
   display: flex;
   gap: 10px;
