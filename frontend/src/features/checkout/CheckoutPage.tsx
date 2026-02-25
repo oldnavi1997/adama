@@ -1,15 +1,26 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { api } from "../../app/api";
 import { useCartStore } from "../cart/cart.store";
 import ubigeoData from "./peru-ubigeo.json";
 
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY as string;
+
 type OrderResponse = {
   orderId: string;
+  total: number;
   payment: {
+    preferenceId: string;
     initPoint: string;
     sandboxInitPoint: string;
   };
+};
+
+type PaymentProcessResponse = {
+  status: string;
+  status_detail: string;
+  payment_id: number;
 };
 
 type DistrictOption = { name: string; postalCode: string };
@@ -55,6 +66,7 @@ const OLVA_PRICE_BY_DEPARTMENT: Record<string, number> = {
 
 export function CheckoutPage() {
   const { items } = useCartStore();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,6 +76,21 @@ export function CheckoutPage() {
   const [documentType, setDocumentType] = useState<"dni" | "cde">("dni");
   const [documentNumber, setDocumentNumber] = useState("");
   const [phone, setPhone] = useState("");
+
+  const [orderCreated, setOrderCreated] = useState<{
+    orderId: string;
+    preferenceId: string;
+    amount: number;
+  } | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  const mpInitialized = useRef(false);
+  useEffect(() => {
+    if (MP_PUBLIC_KEY && !mpInitialized.current) {
+      initMercadoPago(MP_PUBLIC_KEY, { locale: "es-PE" });
+      mpInitialized.current = true;
+    }
+  }, []);
 
   const [address, setAddress] = useState({
     fullName: "",
@@ -163,19 +190,48 @@ export function CheckoutPage() {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      const checkoutUrl = res.payment.initPoint || res.payment.sandboxInitPoint;
-      if (!checkoutUrl) {
-        throw new Error("Mercado Pago did not return a checkout URL");
-      }
+
       localStorage.setItem("checkout_last_order_id", res.orderId);
       if (email.trim()) {
         localStorage.setItem("checkout_guest_email", email.trim());
       }
-      window.location.href = checkoutUrl;
+
+      setOrderCreated({
+        orderId: res.orderId,
+        preferenceId: res.payment.preferenceId,
+        amount: res.total
+      });
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handlePaymentSubmit(param: { formData: Record<string, unknown> }) {
+    if (!orderCreated) return;
+    setPaymentLoading(true);
+    setError("");
+    try {
+      const res = await api<PaymentProcessResponse>("/payments/process", {
+        method: "POST",
+        body: JSON.stringify({
+          orderId: orderCreated.orderId,
+          formData: param.formData
+        })
+      });
+
+      if (res.status === "approved") {
+        navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}`);
+      } else if (res.status === "rejected") {
+        navigate("/checkout/failure");
+      } else {
+        navigate("/checkout/pending");
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setPaymentLoading(false);
     }
   }
 
@@ -358,18 +414,48 @@ export function CheckoutPage() {
 
               <div className="card checkout-block">
                 <h2>Pago</h2>
-                <p className="checkout-payment-copy">
-                  Seras redirigido a Mercado Pago para completar el pago de forma segura.
-                </p>
-                <div className="checkout-payment-tags">
-                  <span>Tarjetas</span>
-                  <span>Yape</span>
-                  <span>Efectivo</span>
-                </div>
+                {!orderCreated ? (
+                  <>
+                    <p className="checkout-payment-copy">
+                      Completa tus datos y confirma la orden para proceder al pago de forma segura.
+                    </p>
+                    <div className="checkout-payment-tags">
+                      <span>Tarjetas</span>
+                      <span>Yape</span>
+                      <span>Efectivo</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {paymentLoading && <p className="checkout-hint">Procesando pago...</p>}
+                    <Payment
+                      initialization={{
+                        amount: orderCreated.amount,
+                        preferenceId: orderCreated.preferenceId
+                      }}
+                      customization={{
+                        paymentMethods: {
+                          creditCard: "all",
+                          debitCard: "all",
+                          mercadoPago: "all"
+                        }
+                      }}
+                      onSubmit={async ({ formData }) => {
+                        await handlePaymentSubmit({ formData: formData as Record<string, unknown> });
+                      }}
+                      onReady={() => {}}
+                      onError={(error) => {
+                        // eslint-disable-next-line no-console
+                        console.error("Payment Brick error:", error);
+                        setError("Error al cargar el formulario de pago.");
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
               {error ? <p className="checkout-error">{error}</p> : null}
-              {!canSubmit && !error && items.length > 0 && (
+              {!orderCreated && !canSubmit && !error && items.length > 0 && (
                 <p className="checkout-hint">Completa todos los campos obligatorios para continuar.</p>
               )}
 
@@ -377,13 +463,15 @@ export function CheckoutPage() {
                 <Link to="/cart" className="checkout-secondary-link">
                   Volver a carrito
                 </Link>
-                <button
-                  disabled={loading || items.length === 0 || !canSubmit}
-                  onClick={submitOrder}
-                  className="checkout-primary-btn"
-                >
-                  {loading ? "Creando orden..." : "Continuar a pago"}
-                </button>
+                {!orderCreated && (
+                  <button
+                    disabled={loading || items.length === 0 || !canSubmit}
+                    onClick={submitOrder}
+                    className="checkout-primary-btn"
+                  >
+                    {loading ? "Creando orden..." : "Confirmar orden"}
+                  </button>
+                )}
               </div>
             </>
           )}

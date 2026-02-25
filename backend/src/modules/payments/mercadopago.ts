@@ -54,6 +54,54 @@ export async function createPreference(input: {
   return { id: data.id, initPoint: data.init_point, sandboxInitPoint: data.sandbox_init_point };
 }
 
+export type ProcessPaymentInput = {
+  token: string;
+  transaction_amount: number;
+  installments: number;
+  payment_method_id: string;
+  issuer_id?: string | number;
+  payer: {
+    email: string;
+    identification?: { type: string; number: string };
+  };
+  external_reference: string;
+  description?: string;
+  notification_url?: string;
+};
+
+export type ProcessPaymentResult = {
+  id: number;
+  status: string;
+  status_detail: string;
+  external_reference?: string;
+};
+
+export async function processPayment(
+  input: ProcessPaymentInput,
+  idempotencyKey: string
+): Promise<ProcessPaymentResult> {
+  if (!env.mpAccessToken) {
+    throw new Error("MERCADOPAGO_ACCESS_TOKEN is required to process payments");
+  }
+
+  const response = await fetch("https://api.mercadopago.com/v1/payments", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.mpAccessToken}`,
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": idempotencyKey
+    },
+    body: JSON.stringify(input)
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Mercado Pago payment error: ${response.status} ${body}`);
+  }
+
+  return (await response.json()) as ProcessPaymentResult;
+}
+
 export async function getPaymentById(paymentId: string): Promise<{ id: number; status: string; external_reference?: string }> {
   if (!env.mpAccessToken) {
     throw new Error("MERCADOPAGO_ACCESS_TOKEN is required to query payments");

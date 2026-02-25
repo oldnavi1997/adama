@@ -3,7 +3,7 @@ import { PaymentStatus } from "@prisma/client";
 import crypto from "crypto";
 import { prisma } from "../../lib/prisma.js";
 import { env } from "../../config/env.js";
-import { getPaymentById } from "./mercadopago.js";
+import { getPaymentById, processPayment } from "./mercadopago.js";
 import { redisSetNxEx } from "../../lib/redis.js";
 
 export const paymentsRouter = Router();
@@ -53,6 +53,75 @@ function verifyWebhookSignature(req: Request): boolean {
   const expected = crypto.createHmac("sha256", env.mpWebhookSecret).update(manifest).digest("hex");
   return secureCompare(expected, parsed.v1);
 }
+
+paymentsRouter.post("/process", async (req, res) => {
+  try {
+    const { orderId, formData } = req.body as { orderId?: string; formData?: Record<string, unknown> };
+
+    if (!orderId || !formData) {
+      res.status(400).json({ message: "orderId and formData are required" });
+      return;
+    }
+
+    const payment = await prisma.payment.findFirst({
+      where: { orderId },
+      orderBy: { createdAt: "desc" }
+    });
+
+    if (!payment) {
+      res.status(404).json({ message: "Payment record not found for this order" });
+      return;
+    }
+
+    if (payment.status !== "PENDING") {
+      res.status(409).json({ message: "Payment already processed", status: payment.status });
+      return;
+    }
+
+    const idempotencyKey = `process:${payment.externalReference}:${crypto.randomUUID()}`;
+
+    const webhookUrl = env.backendPublicUrl ? `${env.backendPublicUrl}/api/payments/webhook` : "";
+    const isPublicUrl = webhookUrl.startsWith("https://") || (webhookUrl.startsWith("http://") && !webhookUrl.includes("localhost"));
+
+    const mpPayload = {
+      ...formData,
+      external_reference: payment.externalReference,
+      ...(isPublicUrl ? { notification_url: webhookUrl } : {})
+    } as Parameters<typeof processPayment>[0];
+
+    const result = await processPayment(mpPayload, idempotencyKey);
+
+    const mappedStatus = mapPaymentStatus(result.status);
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        mpPaymentId: String(result.id),
+        status: mappedStatus,
+        rawPayload: result as unknown as Record<string, unknown>
+      }
+    });
+
+    if (mappedStatus === PaymentStatus.APPROVED) {
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { status: "PAID" }
+      });
+    }
+
+    res.json({
+      status: result.status,
+      status_detail: result.status_detail,
+      payment_id: result.id
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Payment processing error:", error);
+    res.status(502).json({
+      message: "Payment processing failed",
+      detail: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
 
 paymentsRouter.post("/webhook", async (req, res) => {
   try {

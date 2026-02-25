@@ -130,6 +130,7 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
 
     res.status(201).json({
       orderId: order.id,
+      total: Number(total.toFixed(2)),
       payment: {
         id: payment.id,
         preferenceId: preference.id,
