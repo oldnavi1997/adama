@@ -1,23 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigationType } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { api } from "../../app/api";
 import { productDetailPath, slugify } from "../../app/slug";
 
 const META_TITLE = "Adamantio | Anillos de Promesa y Joyería Plata 925 – Regalos con Significado en Perú";
 const META_DESCRIPTION =
   "Joyas con mensajes ocultos y conexión eterna. Anillos de promesa, pulseras para parejas y plata de ley 925. Regalos únicos para ella y él. Envíos a todo Perú.";
-const CATALOG_SCROLL_KEY = "catalog:scrollY";
-const SCROLL_DEBUG_KEY = "debug:scrollRestore";
-
-function isScrollDebugEnabled(): boolean {
-  return sessionStorage.getItem(SCROLL_DEBUG_KEY) === "1";
-}
-
-function logCatalogScroll(event: string, payload: Record<string, unknown>): void {
-  if (!isScrollDebugEnabled()) return;
-  // Temporary diagnostics for browser-back scroll restoration.
-  console.info("[scroll][catalog]", event, payload);
-}
 
 const FEATURED_CATEGORIES = [
   {
@@ -48,8 +36,6 @@ type Product = {
 };
 
 export function CatalogPage() {
-  const location = useLocation();
-  const navigationType = useNavigationType();
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -60,97 +46,6 @@ export function CatalogPage() {
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute("content", META_DESCRIPTION);
   }, []);
-
-  useEffect(() => {
-    let lastKnownY = Number(sessionStorage.getItem(CATALOG_SCROLL_KEY) ?? "0");
-    let sawUserScroll = false;
-    const saveScroll = () => {
-      const currentY = window.scrollY;
-      const existing = Number(sessionStorage.getItem(CATALOG_SCROLL_KEY) ?? "0");
-      // In StrictMode, React runs an early cleanup that can overwrite a valid
-      // stored value with 0 before restoration runs. Skip that specific case.
-      if (!sawUserScroll && currentY <= 1 && Number.isFinite(existing) && existing > 1) {
-        logCatalogScroll("save:skip-strict-cleanup", {
-          key: CATALOG_SCROLL_KEY,
-          currentY,
-          existing,
-          path: location.pathname
-        });
-        return;
-      }
-
-      if (currentY > 1) {
-        lastKnownY = currentY;
-      }
-      const value = String(Math.max(0, Math.round(lastKnownY)));
-      sessionStorage.setItem(CATALOG_SCROLL_KEY, value);
-      logCatalogScroll("save", {
-        key: CATALOG_SCROLL_KEY,
-        value,
-        currentY,
-        lastKnownY,
-        path: location.pathname
-      });
-    };
-
-    let rafId = 0;
-    const onScroll = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        sawUserScroll = true;
-        lastKnownY = window.scrollY;
-        saveScroll();
-      });
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      saveScroll();
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (navigationType !== "POP" || location.pathname !== "/") return;
-
-    const raw = sessionStorage.getItem(CATALOG_SCROLL_KEY);
-    const targetY = Number(raw ?? "0");
-    logCatalogScroll("restore:start", {
-      navigationType,
-      path: location.pathname,
-      raw,
-      targetY,
-      products: products.length
-    });
-    if (!Number.isFinite(targetY) || targetY <= 0) return;
-
-    let attempts = 0;
-    const maxAttempts = 120;
-    const tryRestore = () => {
-      const maxScrollableY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-      const nextY = Math.min(targetY, maxScrollableY);
-      window.scrollTo({ top: nextY, behavior: "auto" });
-      if (attempts === 0 || attempts % 10 === 0 || nextY >= targetY || attempts >= maxAttempts) {
-        logCatalogScroll("restore:attempt", {
-          attempts,
-          maxAttempts,
-          targetY,
-          nextY,
-          maxScrollableY,
-          products: products.length
-        });
-      }
-      if (nextY >= targetY || attempts >= maxAttempts) {
-        return;
-      }
-      attempts += 1;
-      window.setTimeout(tryRestore, 50);
-    };
-
-    window.setTimeout(tryRestore, 0);
-  }, [navigationType, location.pathname, products.length]);
 
   useEffect(() => {
     const params = new URLSearchParams({

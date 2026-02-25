@@ -1,4 +1,5 @@
-import { createBrowserRouter, Link, Outlet, useLocation } from "react-router-dom";
+import { createBrowserRouter, Link, useLocation } from "react-router-dom";
+import KeepAliveRouteOutlet from "keepalive-for-react-router";
 import { useEffect, useState } from "react";
 import { CatalogPage } from "../features/catalog/CatalogPage";
 import { ProductDetailPage } from "../features/catalog/ProductDetailPage";
@@ -231,7 +232,10 @@ function Layout() {
         </div>
       </aside>
       <main className="container">
-        <Outlet />
+        <KeepAliveRouteOutlet
+          include={[/^\/$/, /^\/categoria\//]}
+          max={10}
+        />
       </main>
       <Footer />
     </div>

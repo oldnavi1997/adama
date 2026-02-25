@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigationType, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { api } from "../../app/api";
 import { productDetailPath } from "../../app/slug";
 import {
@@ -25,22 +25,8 @@ type ProductsResponse = {
   pageSize: number;
   total: number;
 };
-const CATEGORY_SCROLL_PREFIX = "category:scrollY:";
-const SCROLL_DEBUG_KEY = "debug:scrollRestore";
-
-function isScrollDebugEnabled(): boolean {
-  return sessionStorage.getItem(SCROLL_DEBUG_KEY) === "1";
-}
-
-function logCategoryScroll(event: string, payload: Record<string, unknown>): void {
-  if (!isScrollDebugEnabled()) return;
-  // Temporary diagnostics for browser-back scroll restoration.
-  console.info("[scroll][category]", event, payload);
-}
 
 export function CategoryPage() {
-  const location = useLocation();
-  const navigationType = useNavigationType();
   const { categorySlug } = useParams();
   const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
   const [products, setProducts] = useState<Product[]>([]);
@@ -85,58 +71,6 @@ export function CategoryPage() {
   }, []);
 
   useEffect(() => {
-    const scrollKey = `${CATEGORY_SCROLL_PREFIX}${location.pathname}`;
-    let lastKnownY = Number(sessionStorage.getItem(scrollKey) ?? "0");
-    let sawUserScroll = false;
-    const saveScroll = () => {
-      const currentY = window.scrollY;
-      const existing = Number(sessionStorage.getItem(scrollKey) ?? "0");
-      // In StrictMode, React runs an early cleanup that can overwrite a valid
-      // stored value with 0 before restoration runs. Skip that specific case.
-      if (!sawUserScroll && currentY <= 1 && Number.isFinite(existing) && existing > 1) {
-        logCategoryScroll("save:skip-strict-cleanup", {
-          key: scrollKey,
-          currentY,
-          existing,
-          path: location.pathname
-        });
-        return;
-      }
-
-      if (currentY > 1) {
-        lastKnownY = currentY;
-      }
-      const value = String(Math.max(0, Math.round(lastKnownY)));
-      sessionStorage.setItem(scrollKey, value);
-      logCategoryScroll("save", {
-        key: scrollKey,
-        value,
-        currentY,
-        lastKnownY,
-        path: location.pathname
-      });
-    };
-
-    let rafId = 0;
-    const onScroll = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        sawUserScroll = true;
-        lastKnownY = window.scrollY;
-        saveScroll();
-      });
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      saveScroll();
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [location.pathname]);
-
-  useEffect(() => {
     setPage(1);
   }, [currentCategory?.id, sortBy]);
 
@@ -176,49 +110,6 @@ export function CategoryPage() {
       setError((err as Error).message);
     });
   }, [currentCategory, page, sortBy]);
-
-  useEffect(() => {
-    if (navigationType !== "POP" || !location.pathname.startsWith("/categoria/")) return;
-
-    const scrollKey = `${CATEGORY_SCROLL_PREFIX}${location.pathname}`;
-    const raw = sessionStorage.getItem(scrollKey);
-    const targetY = Number(raw ?? "0");
-    logCategoryScroll("restore:start", {
-      navigationType,
-      path: location.pathname,
-      raw,
-      targetY,
-      loading,
-      products: products.length
-    });
-    if (!Number.isFinite(targetY) || targetY <= 0) return;
-
-    let attempts = 0;
-    const maxAttempts = 120;
-    const tryRestore = () => {
-      const maxScrollableY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-      const nextY = Math.min(targetY, maxScrollableY);
-      window.scrollTo({ top: nextY, behavior: "auto" });
-      if (attempts === 0 || attempts % 10 === 0 || nextY >= targetY || attempts >= maxAttempts) {
-        logCategoryScroll("restore:attempt", {
-          attempts,
-          maxAttempts,
-          targetY,
-          nextY,
-          maxScrollableY,
-          loading,
-          products: products.length
-        });
-      }
-      if (nextY >= targetY || attempts >= maxAttempts) {
-        return;
-      }
-      attempts += 1;
-      window.setTimeout(tryRestore, 50);
-    };
-
-    window.setTimeout(tryRestore, 0);
-  }, [navigationType, location.pathname, products.length, loading]);
 
   if (categoriesLoading) {
     return (
