@@ -240,31 +240,59 @@ export function CheckoutPage() {
 
   async function handleYapeSubmit() {
     if (!orderCreated) return;
-    if (!yapePhone.trim() || !yapeOtp.trim()) {
-      setError("Ingresa tu número de celular y el código OTP de Yape.");
+    if (!yapePhone.trim() || yapeOtp.trim().length !== 6) {
+      setError("Ingresa tu número de celular y el código OTP de 6 dígitos de Yape.");
       return;
     }
     setPaymentLoading(true);
     setError("");
     try {
-      const mp = new (window as unknown as { MercadoPago: new (key: string) => {
-        yape: (opts: { otp: string; phoneNumber: string }) => { create: () => Promise<{ id: string }> };
-      } }).MercadoPago(MP_PUBLIC_KEY);
+      const MercadoPagoSDK = (window as unknown as Record<string, unknown>).MercadoPago as
+        | (new (key: string) => Record<string, unknown>)
+        | undefined;
 
-      const yape = mp.yape({ otp: yapeOtp.trim(), phoneNumber: yapePhone.trim() });
+      if (!MercadoPagoSDK) {
+        throw new Error("El SDK de Mercado Pago no se ha cargado correctamente. Recarga la página.");
+      }
+
+      const mp = new MercadoPagoSDK(MP_PUBLIC_KEY);
+      const yapeFn = mp.yape as (opts: { otp: string; phoneNumber: string }) => { create: () => Promise<{ id: string }> };
+
+      if (typeof yapeFn !== "function") {
+        throw new Error("La función Yape no está disponible en el SDK. Verifica tu configuración.");
+      }
+
+      const yape = yapeFn({ otp: yapeOtp.trim(), phoneNumber: yapePhone.trim() });
       const tokenResult = await yape.create();
 
-      const formData = {
-        token: tokenResult.id,
-        transaction_amount: orderCreated.amount,
-        installments: 1,
-        payment_method_id: "yape",
-        payer: { email: email.trim() }
-      };
+      if (!tokenResult?.id) {
+        throw new Error("No se pudo generar el token de Yape. Verifica tu número y código OTP.");
+      }
 
-      await handlePaymentSubmit({ formData: formData as unknown as Record<string, unknown> });
+      const res = await api<PaymentProcessResponse>("/payments/process", {
+        method: "POST",
+        body: JSON.stringify({
+          orderId: orderCreated.orderId,
+          formData: {
+            token: tokenResult.id,
+            transaction_amount: orderCreated.amount,
+            installments: 1,
+            payment_method_id: "yape",
+            payer: { email: email.trim() }
+          }
+        })
+      });
+
+      if (res.status === "approved") {
+        navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}`);
+      } else if (res.status === "rejected") {
+        setError(`Pago rechazado: ${res.status_detail}. Intenta de nuevo.`);
+      } else {
+        navigate("/checkout/pending");
+      }
     } catch (e) {
-      setError((e as Error).message || "Error al procesar el pago con Yape.");
+      const msg = (e as Error).message || "Error al procesar el pago con Yape.";
+      setError(msg);
     } finally {
       setPaymentLoading(false);
     }
