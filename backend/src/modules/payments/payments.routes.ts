@@ -97,7 +97,7 @@ paymentsRouter.post("/process", async (req, res) => {
       data: {
         mpPaymentId: String(result.id),
         status: mappedStatus,
-        rawPayload: result as unknown as Record<string, unknown>
+        rawPayload: JSON.parse(JSON.stringify(result))
       }
     });
 
