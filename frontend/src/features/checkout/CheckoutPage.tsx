@@ -64,6 +64,20 @@ const OLVA_PRICE_BY_DEPARTMENT: Record<string, number> = {
   Callao: 15
 };
 
+const MP_REJECTION_MESSAGES: Record<string, string> = {
+  cc_rejected_bad_filled_security_code: "El código de seguridad (CVV) es incorrecto. Revísalo e intenta de nuevo.",
+  cc_rejected_bad_filled_card_number: "El número de tarjeta es incorrecto. Revísalo e intenta de nuevo.",
+  cc_rejected_bad_filled_date: "La fecha de vencimiento es incorrecta. Revísala e intenta de nuevo.",
+  cc_rejected_insufficient_amount: "Tu tarjeta no tiene fondos suficientes.",
+  cc_rejected_card_disabled: "Tu tarjeta está inhabilitada. Comunícate con tu banco.",
+  cc_rejected_max_attempts: "Superaste el límite de intentos permitidos. Usa otra tarjeta.",
+  cc_rejected_duplicated_payment: "Ya realizaste un pago por este monto. Si necesitas pagar de nuevo, usa otra tarjeta.",
+  cc_rejected_other_reason: "Tu tarjeta fue rechazada. Intenta con otra tarjeta o método de pago.",
+  cc_rejected_call_for_authorize: "Tu banco requiere que autorices el pago. Llama a tu banco e intenta de nuevo.",
+  cc_rejected_high_risk: "El pago fue rechazado por políticas de seguridad. Intenta con otro método de pago.",
+  bank_error: "Hubo un error con el banco. Intenta de nuevo en unos minutos."
+};
+
 export function CheckoutPage() {
   const { items } = useCartStore();
   const navigate = useNavigate();
@@ -134,6 +148,7 @@ export function CheckoutPage() {
     fullName: "",
     phone: "",
     street: "",
+    district: "",
     city: "",
     state: "",
     postalCode: "",
@@ -180,6 +195,7 @@ export function CheckoutPage() {
       ...prev,
       state: value,
       city: "",
+      district: "",
       postalCode: ""
     }));
     setDistrictSelectValue("");
@@ -189,16 +205,18 @@ export function CheckoutPage() {
     setAddress((prev) => ({
       ...prev,
       city: value,
+      district: "",
       postalCode: ""
     }));
     setDistrictSelectValue("");
   }
 
   function handleDistrictChange(value: string) {
-    const [, postalCode] = value.split("___");
+    const [districtName, postalCode] = value.split("___");
     setDistrictSelectValue(value);
     setAddress((prev) => ({
       ...prev,
+      district: districtName || "",
       postalCode: postalCode || ""
     }));
   }
@@ -210,7 +228,9 @@ export function CheckoutPage() {
       const normalizedAddress = {
         ...address,
         fullName: `${firstName} ${lastName}`.trim(),
-        phone: phone.trim()
+        phone: phone.trim(),
+        documentType,
+        documentNumber: documentNumber.trim()
       };
 
       const payload = {
@@ -262,7 +282,8 @@ export function CheckoutPage() {
       if (res.status === "approved") {
         navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}&payment_id=${res.payment_id}`);
       } else if (res.status === "rejected") {
-        navigate("/checkout/failure");
+        const detail = res.status_detail ?? "";
+        setError(MP_REJECTION_MESSAGES[detail] ?? "El pago fue rechazado. Revisa los datos de tu tarjeta e intenta de nuevo.");
       } else {
         navigate("/checkout/pending");
       }
@@ -275,10 +296,19 @@ export function CheckoutPage() {
 
   async function handleYapeSubmit() {
     if (!orderCreated) return;
-    if (!yapePhone.trim() || yapeOtp.trim().length !== 6) {
-      setError("Ingresa tu número de celular y el código OTP de 6 dígitos de Yape.");
+
+    const trimmedPhone = yapePhone.trim();
+    const trimmedOtp = yapeOtp.trim();
+
+    if (!trimmedPhone || !/^9\d{8}$/.test(trimmedPhone)) {
+      setError("Ingresa un número de celular válido de 9 dígitos que empiece con 9.");
       return;
     }
+    if (trimmedOtp.length !== 6 || !/^\d{6}$/.test(trimmedOtp)) {
+      setError("Ingresa el código de aprobación de 6 dígitos de Yape.");
+      return;
+    }
+
     setPaymentLoading(true);
     setError("");
     try {
@@ -289,21 +319,20 @@ export function CheckoutPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            phoneNumber: yapePhone.trim(),
-            otp: yapeOtp.trim(),
+            phoneNumber: trimmedPhone,
+            otp: trimmedOtp,
             requestId
           })
         }
       );
 
       if (!tokenRes.ok) {
-        const errBody = await tokenRes.text();
-        throw new Error(`Error al generar token Yape: ${errBody}`);
+        throw new Error("No se pudo verificar tu cuenta de Yape. Revisa tu número y código de aprobación.");
       }
 
       const tokenData = (await tokenRes.json()) as { id: string };
       if (!tokenData?.id) {
-        throw new Error("No se pudo generar el token de Yape. Verifica tu número y código OTP.");
+        throw new Error("No se pudo generar el token de Yape. Verifica tu número y código de aprobación.");
       }
 
       const res = await api<PaymentProcessResponse>("/payments/process", {
@@ -323,7 +352,8 @@ export function CheckoutPage() {
       if (res.status === "approved") {
         navigate(`/checkout/success?external_reference=order_${orderCreated.orderId}&payment_id=${res.payment_id}`);
       } else if (res.status === "rejected") {
-        setError(`Pago rechazado: ${res.status_detail}. Intenta de nuevo.`);
+        const detail = res.status_detail ?? "";
+        setError(MP_REJECTION_MESSAGES[detail] ?? "El pago con Yape fue rechazado. Verifica tus datos e intenta de nuevo.");
       } else {
         navigate("/checkout/pending");
       }

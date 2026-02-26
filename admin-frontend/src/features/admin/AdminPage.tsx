@@ -33,9 +33,23 @@ type Order = {
   id: string;
   status: "PENDING" | "PAID" | "CANCELLED" | "SHIPPED";
   total: string;
+  shippingCost: string;
+  mpCommission: string;
   createdAt: string;
   user?: { email: string; fullName: string } | null;
   guestEmail?: string | null;
+  address?: {
+    fullName: string;
+    phone: string;
+    documentType: string;
+    documentNumber: string;
+    street: string;
+    district: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  } | null;
   items: Array<{ id: string; productName: string; quantity: number; productPrice: string }>;
   payments: Array<{ id: string; status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"; amount: string }>;
 };
@@ -441,34 +455,93 @@ export function AdminPage() {
             </select>
           </div>
 
-          {visibleOrders.map((order) => (
-            <div key={order.id} className="card" style={{ marginBottom: 10 }}>
-              <div className="row" style={{ justifyContent: "space-between" }}>
-                <div>
-                  <strong>{order.id}</strong>
-                  <p style={{ margin: 0 }}>
-                    Cliente: {order.user?.fullName ?? order.user?.email ?? order.guestEmail ?? "Sin email"} - Total: S/{" "}
-                    {Number(order.total).toFixed(2)}
-                  </p>
-                </div>
-                <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as Order["status"])}>
-                  <option value="PENDING">PENDING</option>
-                  <option value="PAID">PAID</option>
-                  <option value="CANCELLED">CANCELLED</option>
-                  <option value="SHIPPED">SHIPPED</option>
-                </select>
-              </div>
+          {visibleOrders.map((order) => {
+            const subtotal = order.items.reduce((acc, item) => acc + Number(item.productPrice) * item.quantity, 0);
+            const customerName = order.address?.fullName ?? order.user?.fullName ?? order.user?.email ?? order.guestEmail ?? "Sin datos";
+            const customerEmail = order.user?.email ?? order.guestEmail ?? "—";
+            const customerPhone = order.address?.phone ?? "—";
 
-              <div style={{ marginTop: 8 }}>
-                <strong>Items:</strong>
-                {order.items.map((item) => (
-                  <p key={item.id} style={{ margin: "4px 0 0 0" }}>
-                    {item.productName} x{item.quantity} - S/ {Number(item.productPrice).toFixed(2)}
-                  </p>
-                ))}
+            return (
+              <div key={order.id} className="card" style={{ marginBottom: 12 }}>
+                <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <strong style={{ fontSize: "0.85rem", color: "#6b7280" }}>#{order.id}</strong>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#9ca3af" }}>
+                      {new Date(order.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as Order["status"])}>
+                    <option value="PENDING">PENDING</option>
+                    <option value="PAID">PAID</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                    <option value="SHIPPED">SHIPPED</option>
+                  </select>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: 12 }}>
+                  <div>
+                    <strong style={{ fontSize: "0.82rem", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Cliente</strong>
+                    <p style={{ margin: "4px 0 0" }}>{customerName}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>{customerEmail}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>Tel: {customerPhone}</p>
+                    {order.address?.documentNumber && (
+                      <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>
+                        {(order.address.documentType || "DNI").toUpperCase()}: {order.address.documentNumber}
+                      </p>
+                    )}
+                  </div>
+
+                  {order.address && (
+                    <div>
+                      <strong style={{ fontSize: "0.82rem", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Envío</strong>
+                      <p style={{ margin: "4px 0 0" }}>{order.address.street}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>
+                        {order.address.district ? `${order.address.district}, ` : ""}{order.address.city}, {order.address.state}
+                      </p>
+                      <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>
+                        CP: {order.address.postalCode} — {order.address.country}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: 12 }}>
+                  <strong style={{ fontSize: "0.82rem", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Productos</strong>
+                  {order.items.map((item) => (
+                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", margin: "4px 0 0" }}>
+                      <span>{item.productName} x{item.quantity}</span>
+                      <span>S/ {(Number(item.productPrice) * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: 12, borderTop: "1px solid #e5e7eb", paddingTop: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#4b5563" }}>
+                    <span>Subtotal productos</span>
+                    <span>S/ {subtotal.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#4b5563" }}>
+                    <span>Envío</span>
+                    <span>S/ {Number(order.shippingCost).toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#4b5563" }}>
+                    <span>Comisión MP</span>
+                    <span>S/ {Number(order.mpCommission).toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, marginTop: 4 }}>
+                    <span>Total</span>
+                    <span>S/ {Number(order.total).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {order.payments.length > 0 && (
+                  <div style={{ marginTop: 10, fontSize: "0.85rem", color: "#6b7280" }}>
+                    Pago: {order.payments.map((p) => `${p.status} — S/ ${Number(p.amount).toFixed(2)}`).join(", ")}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </section>
       )}
     </section>

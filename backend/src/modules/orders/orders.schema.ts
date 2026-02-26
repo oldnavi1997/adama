@@ -5,7 +5,10 @@ export const orderSchema = z.object({
   address: z.object({
     fullName: z.string().min(2),
     phone: z.string().min(5),
+    documentType: z.string().optional().default(""),
+    documentNumber: z.string().optional().default(""),
     street: z.string().min(3),
+    district: z.string().optional().default(""),
     city: z.string().min(2),
     state: z.string().min(2),
     postalCode: z.string().min(3),

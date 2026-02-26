@@ -58,6 +58,8 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
         guestEmail: payload.guestEmail,
         addressId: address.id,
         total: new Prisma.Decimal(total.toFixed(2)),
+        shippingCost: new Prisma.Decimal(shippingCost.toFixed(2)),
+        mpCommission: new Prisma.Decimal(mpCommission.toFixed(2)),
         items: {
           create: payload.items.map((item) => {
             const product = productsById.get(item.productId)!;
@@ -159,7 +161,7 @@ ordersRouter.get("/:id/confirmation", async (req, res) => {
   const order = await prisma.order.findUnique({
     where: { id: req.params.id },
     include: {
-      items: true,
+      items: { include: { product: { select: { imageUrl: true } } } },
       payments: true,
       address: true,
       user: { select: { id: true, email: true, fullName: true } }
@@ -198,11 +200,19 @@ ordersRouter.get("/:id/confirmation", async (req, res) => {
     id: order.id,
     status: order.status,
     total: order.total,
+    shippingCost: order.shippingCost,
+    mpCommission: order.mpCommission,
     createdAt: order.createdAt,
     guestEmail: order.guestEmail,
     user: order.user,
     address: order.address,
-    items: order.items,
+    items: order.items.map((item) => ({
+      id: item.id,
+      productName: item.productName,
+      productPrice: item.productPrice,
+      quantity: item.quantity,
+      imageUrl: item.product?.imageUrl ?? null
+    })),
     payments: order.payments
   });
 });
@@ -212,7 +222,8 @@ ordersRouter.get("/", requireAuth, requireRole(UserRole.ADMIN), async (_req, res
     include: {
       items: true,
       payments: true,
-      user: { select: { id: true, email: true, fullName: true } }
+      user: { select: { id: true, email: true, fullName: true } },
+      address: true
     },
     orderBy: { createdAt: "desc" }
   });
