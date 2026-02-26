@@ -46,7 +46,7 @@ export function CartPage() {
                   <tr key={item.productId}>
                     <td className="cart-col-image">
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name} className="cart-table-thumb" />
+                        <img src={item.imageUrl} alt={item.name} className="cart-table-thumb" loading="lazy" />
                       ) : (
                         <div className="cart-table-thumb cart-table-thumb--fallback" aria-hidden="true" />
                       )}

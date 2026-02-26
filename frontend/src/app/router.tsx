@@ -1,23 +1,39 @@
 import { createBrowserRouter, Link, useLocation } from "react-router-dom";
 import KeepAliveRouteOutlet from "keepalive-for-react-router";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { CatalogPage } from "../features/catalog/CatalogPage";
-import { ProductDetailPage } from "../features/catalog/ProductDetailPage";
 import { CategoryPage } from "../features/catalog/CategoryPage";
-import { CartPage } from "../features/cart/CartPage";
-import { CheckoutPage } from "../features/checkout/CheckoutPage";
-import { CheckoutSuccessPage } from "../features/checkout/CheckoutSuccessPage";
-import { CheckoutFailurePage } from "../features/checkout/CheckoutFailurePage";
-import { CheckoutPendingPage } from "../features/checkout/CheckoutPendingPage";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { useCartStore } from "../features/cart/cart.store";
 import { api } from "./api";
 import { Footer } from "./Footer";
 import { Header, type PublicCategory } from "./Header";
 import { fetchPublicCategories, getCachedPublicCategories } from "./publicCategories";
-import { TerminosDeServicioPage } from "./legal/TerminosDeServicioPage";
-import { PoliticaReembolsosPage } from "./legal/PoliticaReembolsosPage";
-import { PoliticaPrivacidadPage } from "./legal/PoliticaPrivacidadPage";
-import { LibroReclamacionesPage } from "./legal/LibroReclamacionesPage";
+
+const ProductDetailPage = lazy(() => import("../features/catalog/ProductDetailPage").then((m) => ({ default: m.ProductDetailPage })));
+const CartPage = lazy(() => import("../features/cart/CartPage").then((m) => ({ default: m.CartPage })));
+const CheckoutPage = lazy(() => import("../features/checkout/CheckoutPage").then((m) => ({ default: m.CheckoutPage })));
+const CheckoutSuccessPage = lazy(() => import("../features/checkout/CheckoutSuccessPage").then((m) => ({ default: m.CheckoutSuccessPage })));
+const CheckoutFailurePage = lazy(() => import("../features/checkout/CheckoutFailurePage").then((m) => ({ default: m.CheckoutFailurePage })));
+const CheckoutPendingPage = lazy(() => import("../features/checkout/CheckoutPendingPage").then((m) => ({ default: m.CheckoutPendingPage })));
+const TerminosDeServicioPage = lazy(() => import("./legal/TerminosDeServicioPage").then((m) => ({ default: m.TerminosDeServicioPage })));
+const PoliticaReembolsosPage = lazy(() => import("./legal/PoliticaReembolsosPage").then((m) => ({ default: m.PoliticaReembolsosPage })));
+const PoliticaPrivacidadPage = lazy(() => import("./legal/PoliticaPrivacidadPage").then((m) => ({ default: m.PoliticaPrivacidadPage })));
+const LibroReclamacionesPage = lazy(() => import("./legal/LibroReclamacionesPage").then((m) => ({ default: m.LibroReclamacionesPage })));
+
+function LazyRoute({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>}>{children}</Suspense>;
+}
+
+function NotFoundPage() {
+  return (
+    <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+      <h1>404</h1>
+      <p>La página que buscas no existe.</p>
+      <Link to="/" style={{ color: "#111827", textDecoration: "underline" }}>Volver al inicio</Link>
+    </div>
+  );
+}
 
 function MobileCategoryItem({
   category,
@@ -232,10 +248,12 @@ function Layout() {
         </div>
       </aside>
       <main className="container">
-        <KeepAliveRouteOutlet
-          include={[/^\/$/, /^\/categoria\//]}
-          max={10}
-        />
+        <ErrorBoundary>
+          <KeepAliveRouteOutlet
+            include={[/^\/$/, /^\/categoria\//]}
+            max={10}
+          />
+        </ErrorBoundary>
       </main>
       <Footer />
     </div>
@@ -248,18 +266,19 @@ export const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <CatalogPage /> },
-      { path: "products/:productId", element: <ProductDetailPage /> },
-      { path: "producto/:productSlug", element: <ProductDetailPage /> },
+      { path: "products/:productId", element: <LazyRoute><ProductDetailPage /></LazyRoute> },
+      { path: "producto/:productSlug", element: <LazyRoute><ProductDetailPage /></LazyRoute> },
       { path: "categoria/:categorySlug", element: <CategoryPage /> },
-      { path: "cart", element: <CartPage /> },
-      { path: "checkout", element: <CheckoutPage /> },
-      { path: "checkout/success", element: <CheckoutSuccessPage /> },
-      { path: "checkout/failure", element: <CheckoutFailurePage /> },
-      { path: "checkout/pending", element: <CheckoutPendingPage /> },
-      { path: "terminos-de-servicio", element: <TerminosDeServicioPage /> },
-      { path: "politica-de-reembolsos", element: <PoliticaReembolsosPage /> },
-      { path: "politica-de-privacidad", element: <PoliticaPrivacidadPage /> },
-      { path: "libro-de-reclamaciones", element: <LibroReclamacionesPage /> }
+      { path: "cart", element: <LazyRoute><CartPage /></LazyRoute> },
+      { path: "checkout", element: <LazyRoute><CheckoutPage /></LazyRoute> },
+      { path: "checkout/success", element: <LazyRoute><CheckoutSuccessPage /></LazyRoute> },
+      { path: "checkout/failure", element: <LazyRoute><CheckoutFailurePage /></LazyRoute> },
+      { path: "checkout/pending", element: <LazyRoute><CheckoutPendingPage /></LazyRoute> },
+      { path: "terminos-de-servicio", element: <LazyRoute><TerminosDeServicioPage /></LazyRoute> },
+      { path: "politica-de-reembolsos", element: <LazyRoute><PoliticaReembolsosPage /></LazyRoute> },
+      { path: "politica-de-privacidad", element: <LazyRoute><PoliticaPrivacidadPage /></LazyRoute> },
+      { path: "libro-de-reclamaciones", element: <LazyRoute><LibroReclamacionesPage /></LazyRoute> },
+      { path: "*", element: <NotFoundPage /> }
     ]
   }
 ]);

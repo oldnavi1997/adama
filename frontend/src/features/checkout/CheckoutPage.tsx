@@ -533,6 +533,16 @@ export function CheckoutPage() {
                       <span>Yape</span>
                     </div>
                   </>
+                ) : import.meta.env.VITE_SKIP_PAYMENT === "true" ? (
+                  <button
+                    type="button"
+                    disabled={paymentLoading}
+                    onClick={() => handlePaymentSubmit({ formData: { dev_skip: true } })}
+                    className="checkout-primary-btn"
+                    style={{ width: "100%", background: "#16a34a", borderColor: "#16a34a" }}
+                  >
+                    {paymentLoading ? "Procesando..." : `Pagar S/ ${orderCreated.amount.toFixed(2)} (Dev)`}
+                  </button>
                 ) : (
                   <>
                     <div className="checkout-payment-tabs">
@@ -675,7 +685,7 @@ export function CheckoutPage() {
             {items.map((item) => (
               <div key={item.productId} className="checkout-summary-item">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="checkout-summary-thumb" />
+                  <img src={item.imageUrl} alt={item.name} className="checkout-summary-thumb" loading="lazy" />
                 ) : (
                   <div className="checkout-summary-thumb checkout-summary-thumb--fallback" aria-hidden="true" />
                 )}

@@ -204,7 +204,7 @@ export function CategoryPage() {
           <article key={product.id} className="card catalog-card">
             {(product.imageUrl || product.imageUrls?.[0]) && (
               <Link to={productDetailPath(product)}>
-                <img src={product.imageUrl || product.imageUrls?.[0]} alt={product.name} className="catalog-image" />
+                <img src={product.imageUrl || product.imageUrls?.[0]} alt={product.name} className="catalog-image" loading="lazy" />
               </Link>
             )}
             <h3>

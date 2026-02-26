@@ -173,7 +173,7 @@ export function CatalogPage() {
                 <article key={p.id} className="card catalog-card product-slider__card">
                   {(p.imageUrl || p.imageUrls?.[0]) && (
                     <Link to={productDetailPath(p)}>
-                      <img src={p.imageUrl || p.imageUrls?.[0]} alt={p.name} className="catalog-image" />
+                      <img src={p.imageUrl || p.imageUrls?.[0]} alt={p.name} className="catalog-image" loading="lazy" />
                     </Link>
                   )}
                   {p.category && (

@@ -78,6 +78,24 @@ paymentsRouter.post("/process", async (req, res) => {
       return;
     }
 
+    if (env.skipPayment) {
+      const fakePaymentId = Date.now();
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          mpPaymentId: String(fakePaymentId),
+          status: PaymentStatus.APPROVED,
+          rawPayload: { dev_skip: true }
+        }
+      });
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { status: "PAID" }
+      });
+      res.json({ status: "approved", status_detail: "dev_skip", payment_id: fakePaymentId });
+      return;
+    }
+
     const idempotencyKey = `process:${payment.externalReference}:${crypto.randomUUID()}`;
 
     const webhookUrl = env.backendPublicUrl ? `${env.backendPublicUrl}/api/payments/webhook` : "";
