@@ -357,10 +357,26 @@ productsRouter.delete("/categories/:id", requireAuth, requireRole(UserRole.ADMIN
 
 productsRouter.get("/:id", async (req, res) => {
   const product = await prisma.product.findUnique({ where: { id: req.params.id } });
-  if (!product || !product.isActive) {
+  if (!product) {
     res.status(404).json({ message: "Product not found" });
     return;
   }
+
+  if (!product.isActive) {
+    let isAdmin = false;
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const payload = verifyAccessToken(authHeader.replace("Bearer ", ""));
+        isAdmin = payload.role === UserRole.ADMIN;
+      } catch { /* ignore */ }
+    }
+    if (!isAdmin) {
+      res.status(404).json({ message: "Product not found" });
+      return;
+    }
+  }
+
   res.json(product);
 });
 
