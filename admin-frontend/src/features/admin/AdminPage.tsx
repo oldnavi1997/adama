@@ -329,18 +329,21 @@ export function AdminPage() {
               onClick={() => setProductCategoryFilter("")}
               className={productCategoryFilter === "" ? "active" : ""}
             >
-              Todas
+              Todas ({products.length})
             </button>
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setProductCategoryFilter(category.name)}
-                className={productCategoryFilter === category.name ? "active" : ""}
-              >
-                {category.name}
-              </button>
-            ))}
+            {categories.map((category) => {
+              const count = products.filter((p) => (p.category ?? "") === category.name).length;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setProductCategoryFilter(category.name)}
+                  className={productCategoryFilter === category.name ? "active" : ""}
+                >
+                  {category.name} ({count})
+                </button>
+              );
+            })}
           </div>
 
           <div className="card" style={{ overflowX: "auto" }}>
