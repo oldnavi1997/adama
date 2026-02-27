@@ -13,7 +13,10 @@ type Product = {
   imageUrl?: string | null;
   imageUrls?: string[];
   isActive: boolean;
+  createdAt: string;
 };
+
+type ProductSortKey = "newest" | "oldest" | "name-asc" | "name-desc" | "price-asc" | "price-desc" | "stock-asc" | "stock-desc";
 
 type ProductsResponse = {
   data: Product[];
@@ -92,6 +95,7 @@ export function AdminPage() {
   const [productQuery, setProductQuery] = useState("");
   const [productCategoryFilter, setProductCategoryFilter] = useState("");
   const [productPage, setProductPage] = useState(1);
+  const [productSort, setProductSort] = useState<ProductSortKey>("newest");
 
   const [orderQuery, setOrderQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<"ALL" | Order["status"]>("ALL");
@@ -141,13 +145,43 @@ export function AdminPage() {
   const totalRevenue = useMemo(() => orders.reduce((acc, o) => acc + Number(o.total), 0), [orders]);
   const paidOrders = useMemo(() => orders.filter((o) => o.status === "PAID" || o.status === "SHIPPED").length, [orders]);
 
-  // --- Product filtering & pagination ---
-  const visibleProducts = products.filter((product) => {
-    const matchesCategory = !productCategoryFilter || (product.category ?? "") === productCategoryFilter;
-    const query = productQuery.trim().toLowerCase();
-    const matchesQuery = !query || [product.name, product.description, product.category ?? ""].some((v) => v.toLowerCase().includes(query));
-    return matchesCategory && matchesQuery;
-  });
+  // --- Product filtering, sorting & pagination ---
+  const visibleProducts = useMemo(() => {
+    const filtered = products.filter((product) => {
+      const matchesCategory = !productCategoryFilter || (product.category ?? "") === productCategoryFilter;
+      const query = productQuery.trim().toLowerCase();
+      const matchesQuery = !query || [product.name, product.description, product.category ?? ""].some((v) => v.toLowerCase().includes(query));
+      return matchesCategory && matchesQuery;
+    });
+
+    const sorted = [...filtered];
+    switch (productSort) {
+      case "name-asc":   sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
+      case "name-desc":  sorted.sort((a, b) => b.name.localeCompare(a.name)); break;
+      case "price-asc":  sorted.sort((a, b) => Number(a.price) - Number(b.price)); break;
+      case "price-desc": sorted.sort((a, b) => Number(b.price) - Number(a.price)); break;
+      case "stock-asc":  sorted.sort((a, b) => a.stock - b.stock); break;
+      case "stock-desc": sorted.sort((a, b) => b.stock - a.stock); break;
+      case "oldest":     sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()); break;
+      case "newest":
+      default:           sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
+    }
+    return sorted;
+  }, [products, productQuery, productCategoryFilter, productSort]);
+
+  function toggleProductSort(column: "name" | "price" | "stock") {
+    setProductSort((prev) => {
+      if (prev === `${column}-asc`) return `${column}-desc`;
+      if (prev === `${column}-desc`) return `${column}-asc`;
+      return `${column}-asc`;
+    });
+  }
+
+  function sortArrow(column: "name" | "price" | "stock") {
+    if (productSort === `${column}-asc`) return " ▲";
+    if (productSort === `${column}-desc`) return " ▼";
+    return "";
+  }
 
   const productsPerPage = 12;
   const totalProductPages = Math.max(1, Math.ceil(visibleProducts.length / productsPerPage));
@@ -159,7 +193,7 @@ export function AdminPage() {
   const productStart = (currentProductPage - 1) * productsPerPage + 1;
   const productEnd = Math.min(currentProductPage * productsPerPage, visibleProducts.length);
 
-  useEffect(() => { setProductPage(1); }, [productQuery, productCategoryFilter]);
+  useEffect(() => { setProductPage(1); }, [productQuery, productCategoryFilter, productSort]);
   useEffect(() => { if (productPage > totalProductPages) setProductPage(totalProductPages); }, [productPage, totalProductPages]);
 
   // --- Order filtering & pagination ---
@@ -351,12 +385,21 @@ export function AdminPage() {
               <thead>
                 <tr>
                   <th>Imagen</th>
-                  <th>Nombre</th>
-                  <th>Precio</th>
+                  <th className="sortable-th" onClick={() => toggleProductSort("name")}>Nombre{sortArrow("name")}</th>
+                  <th className="sortable-th" onClick={() => toggleProductSort("price")}>Precio{sortArrow("price")}</th>
                   <th>Categoría</th>
-                  <th>Stock</th>
+                  <th className="sortable-th" onClick={() => toggleProductSort("stock")}>Stock{sortArrow("stock")}</th>
                   <th>Estado</th>
-                  <th></th>
+                  <th>
+                    <button
+                      type="button"
+                      className="sort-date-btn"
+                      onClick={() => setProductSort((p) => p === "newest" ? "oldest" : "newest")}
+                      title="Ordenar por fecha"
+                    >
+                      Fecha {productSort === "newest" ? "▼" : productSort === "oldest" ? "▲" : ""}
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody>

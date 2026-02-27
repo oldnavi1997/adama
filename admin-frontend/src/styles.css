@@ -375,6 +375,30 @@ header {
   background: #f9fafb;
 }
 
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+.sortable-th:hover {
+  color: #2563eb;
+}
+
+.sort-date-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  color: #374151;
+  padding: 0;
+  user-select: none;
+  transition: color 0.15s;
+}
+.sort-date-btn:hover {
+  color: #2563eb;
+}
+
 .admin-products-row {
   cursor: pointer;
 }
