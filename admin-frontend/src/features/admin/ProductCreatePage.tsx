@@ -21,6 +21,7 @@ export function ProductCreatePage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
+    productDetails: "",
     price: 0,
     stock: 0,
     category: "",
@@ -60,7 +61,8 @@ export function ProductCreatePage() {
           ...form,
           imageUrls: galleryUrls,
           name: normalizedName,
-          description: normalizedDescription
+          description: normalizedDescription,
+          productDetails: form.productDetails.trim()
         })
       });
       navigate("/");
@@ -99,11 +101,21 @@ export function ProductCreatePage() {
           />
         </div>
         <div>
+          <label className="admin-field-label">Descripción</label>
           <ClassicEditor
             value={form.description}
             onChange={(html) => setForm((p) => ({ ...p, description: html }))}
-            placeholder="Descripcion del producto"
+            placeholder="Descripción del producto"
             minHeight={220}
+          />
+        </div>
+        <div>
+          <label className="admin-field-label">Detalles del producto</label>
+          <ClassicEditor
+            value={form.productDetails}
+            onChange={(html) => setForm((p) => ({ ...p, productDetails: html }))}
+            placeholder="Detalles del producto (materiales, medidas, cuidados...)"
+            minHeight={140}
           />
         </div>
         <div>
