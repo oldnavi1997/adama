@@ -33,7 +33,9 @@ function Layout() {
         if (me.role !== "ADMIN") {
           throw new Error("Not admin");
         }
-        hydrate({ user: me, accessToken, refreshToken });
+        const currentToken = localStorage.getItem("admin_accessToken");
+        const currentRefresh = localStorage.getItem("admin_refreshToken");
+        hydrate({ user: me, accessToken: currentToken, refreshToken: currentRefresh });
       })
       .catch(() => {
         localStorage.removeItem("admin_accessToken");
