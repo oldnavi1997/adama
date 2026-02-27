@@ -15,6 +15,7 @@ type Product = {
   imageUrl?: string | null;
   imageUrls?: string[];
   contentImages?: string[];
+  productDetails?: string;
   isActive: boolean;
 };
 
@@ -41,6 +42,7 @@ function productSnapshot(p: Product): string {
     imageUrl: p.imageUrl ?? "",
     imageUrls: p.imageUrls ?? [],
     contentImages: p.contentImages ?? [],
+    productDetails: p.productDetails ?? "",
     isActive: p.isActive
   });
 }
@@ -114,6 +116,7 @@ export function ProductEditPage() {
           imageUrl: product.imageUrl ?? "",
           imageUrls: product.imageUrls ?? [],
           contentImages: product.contentImages ?? [],
+          productDetails: product.productDetails ?? "",
           isActive: product.isActive
         })
       });
@@ -313,6 +316,15 @@ export function ProductEditPage() {
               onChange={(html) => setProduct((prev) => (prev ? { ...prev, description: html } : prev))}
               placeholder="Descripción del producto"
               minHeight={180}
+            />
+          </div>
+          <div>
+            <label className="admin-field-label">Detalles del producto</label>
+            <ClassicEditor
+              value={product.productDetails ?? ""}
+              onChange={(html) => setProduct((prev) => (prev ? { ...prev, productDetails: html } : prev))}
+              placeholder="Detalles del producto (materiales, medidas, cuidados...)"
+              minHeight={140}
             />
           </div>
           <div>

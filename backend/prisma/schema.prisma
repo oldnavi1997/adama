@@ -54,8 +54,9 @@ model Product {
   description   String
   imageUrl      String?
   imageUrls     String[]    @default([])
-  contentImages String[]    @default([])
-  category      String?
+  contentImages  String[]    @default([])
+  productDetails String      @default("")
+  category       String?
   price         Decimal     @db.Decimal(10, 2)
   stock         Int
   isActive      Boolean     @default(true)

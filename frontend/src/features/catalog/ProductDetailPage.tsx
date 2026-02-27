@@ -13,6 +13,7 @@ type ProductDetail = {
   imageUrl?: string | null;
   imageUrls?: string[];
   contentImages?: string[];
+  productDetails?: string;
   category?: string | null;
 };
 
@@ -253,6 +254,16 @@ export function ProductDetailPage() {
           </button>
 
           <div className="product-collapse-group">
+            {product.productDetails && product.productDetails.trim() !== "" && (
+              <details className="product-collapse">
+                <summary>
+                  <span>Detalles del producto</span>
+                  <CollapseChevron />
+                </summary>
+                <div className="product-collapse-body product-description" dangerouslySetInnerHTML={{ __html: product.productDetails }} />
+              </details>
+            )}
+
             <details className="product-collapse">
               <summary>
                 <span>Talla</span>
