@@ -16,14 +16,25 @@ type ProductDetail = {
   category?: string | null;
 };
 
+function CollapseChevron() {
+  return (
+    <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ProductDetailPage() {
   const { productSlug, productId: productIdParam } = useParams();
   const addItem = useCartStore((s) => s.addItem);
+  const openDrawer = useCartStore((s) => s.openDrawer);
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [addedFeedback, setAddedFeedback] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const dragState = useRef({
     active: false,
     pointerId: -1,
@@ -74,6 +85,13 @@ export function ProductDetailPage() {
     }
   }, [currentIndex, galleryImages.length]);
 
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.name} — Adamantio`;
+    }
+    return () => { document.title = "Adamantio"; };
+  }, [product]);
+
   if (loading) {
     return <p>Cargando producto...</p>;
   }
@@ -83,7 +101,7 @@ export function ProductDetailPage() {
       <section>
         <h1>Producto no disponible</h1>
         <p style={{ color: "crimson" }}>{error || "No se encontro el producto."}</p>
-        <Link to="/">Volver al catalogo</Link>
+        <Link to="/">Volver al catálogo</Link>
       </section>
     );
   }
@@ -144,11 +162,31 @@ export function ProductDetailPage() {
     }
   };
 
+  const handleAddToCart = () => {
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: Number(product.price),
+      imageUrl: currentImage || product.imageUrl || product.imageUrls?.[0] || ""
+    });
+    setAddedFeedback(true);
+    openDrawer();
+    setTimeout(() => setAddedFeedback(false), 1500);
+  };
+
   return (
     <section className="product-page-premium">
-      <div className="row" style={{ marginBottom: 12 }}>
-        <Link to={product.category ? `/categoria/${slugify(product.category)}` : "/"}>Volver al catalogo</Link>
-      </div>
+      <nav className="product-breadcrumb">
+        <Link to="/">Inicio</Link>
+        <span className="product-breadcrumb-sep">/</span>
+        {product.category && (
+          <>
+            <Link to={`/categoria/${slugify(product.category)}`}>{product.category}</Link>
+            <span className="product-breadcrumb-sep">/</span>
+          </>
+        )}
+        <span className="product-breadcrumb-current">{product.name}</span>
+      </nav>
 
       <article className="product-layout">
         <div className="card product-media">
@@ -160,14 +198,15 @@ export function ProductDetailPage() {
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerEnd}
                 onPointerCancel={handlePointerEnd}
+                onClick={() => { if (!dragState.current.active) setLightboxOpen(true); }}
               >
                 <img key={currentImage} src={currentImage} alt={product.name} className="product-image product-image--fade-in" />
                 {hasMultipleImages && (
                   <>
-                    <button type="button" className="image-slider__nav image-slider__nav--prev" onClick={goPrevious}>
+                    <button type="button" className="image-slider__nav image-slider__nav--prev" onClick={(e) => { e.stopPropagation(); goPrevious(); }}>
                       ‹
                     </button>
-                    <button type="button" className="image-slider__nav image-slider__nav--next" onClick={goNext}>
+                    <button type="button" className="image-slider__nav image-slider__nav--next" onClick={(e) => { e.stopPropagation(); goNext(); }}>
                       ›
                     </button>
                   </>
@@ -195,50 +234,29 @@ export function ProductDetailPage() {
 
         <div className="card product-summary">
           <h1 style={{ marginTop: 0 }}>{product.name}</h1>
-          {product.category && <p className="muted">Categoria: {product.category}</p>}
+          {product.category && (
+            <Link to={`/categoria/${slugify(product.category)}`} className="product-category-link">
+              {product.category}
+            </Link>
+          )}
           <p className="product-price">S/ {Number(product.price).toFixed(2)}</p>
-          {/* <p className="muted">Stock disponible: {product.stock}</p>
-          <p>{product.description}</p> */}
-          <p>{product.description}</p> 
+          {product.description && (
+            <div className="product-description" dangerouslySetInnerHTML={{ __html: product.description }} />
+          )}
 
           <button
-            onClick={() =>
-              addItem({
-                productId: product.id,
-                name: product.name,
-                price: Number(product.price),
-                imageUrl: currentImage || product.imageUrl || product.imageUrls?.[0] || ""
-              })
-            }
-            disabled={product.stock < 1}
-            style={{ width: "100%" }}
+            className={`product-add-btn${addedFeedback ? " is-added" : ""}`}
+            onClick={handleAddToCart}
+            disabled={product.stock < 1 || addedFeedback}
           >
-            {product.stock < 1 ? "Sin stock" : "Agregar al carrito"}
+            {product.stock < 1 ? "Sin stock" : addedFeedback ? "Agregado al carrito" : "Agregar al carrito"}
           </button>
 
           <div className="product-collapse-group">
-            {/*<details className="product-collapse">
-              <summary>
-                <span>Detalles del producto</span>
-                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </summary>
-              <div className="product-collapse-body">
-                <ul>
-                  <li>Tipo: {product.category || "Producto general"}</li>
-                  <li>Modelo: Producto de catálogo</li>
-                  <li>Precio unitario: S/ {Number(product.price).toFixed(2)}</li>
-                  <li>Disponibilidad: {product.stock > 0 ? "En stock" : "Agotado"}</li>
-                </ul>
-              </div>
-            </details>*/}
             <details className="product-collapse">
               <summary>
                 <span>Talla</span>
-                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CollapseChevron />
               </summary>
               <div className="product-collapse-body">
                 <p className="muted">Una talla para todos.</p>
@@ -253,9 +271,7 @@ export function ProductDetailPage() {
             <details className="product-collapse">
               <summary>
                 <span>Envío y entrega</span>
-                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CollapseChevron />
               </summary>
               <div className="product-collapse-body">
                 <p className="muted">Envíos disponibles por Shalom y Olva Courier.</p>
@@ -270,9 +286,7 @@ export function ProductDetailPage() {
             <details className="product-collapse">
               <summary>
                 <span>Grabado (opcional)</span>
-                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CollapseChevron />
               </summary>
               <div className="product-collapse-body">
                 <p className="muted">Máximo 20 caracteres. A-Z 0-9 y símbolos básicos.</p>
@@ -293,6 +307,19 @@ export function ProductDetailPage() {
               className="product-content-img"
             />
           ))}
+        </div>
+      )}
+
+      {lightboxOpen && currentImage && (
+        <div className="product-lightbox" onClick={() => setLightboxOpen(false)}>
+          <img src={currentImage} alt={product.name} onClick={(e) => e.stopPropagation()} />
+          <button type="button" className="product-lightbox-close" onClick={() => setLightboxOpen(false)}>✕</button>
+          {hasMultipleImages && (
+            <>
+              <button type="button" className="product-lightbox-nav product-lightbox-nav--prev" onClick={(e) => { e.stopPropagation(); goPrevious(); }}>‹</button>
+              <button type="button" className="product-lightbox-nav product-lightbox-nav--next" onClick={(e) => { e.stopPropagation(); goNext(); }}>›</button>
+            </>
+          )}
         </div>
       )}
     </section>

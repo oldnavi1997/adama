@@ -10,10 +10,13 @@ export type CartItem = {
 
 type CartState = {
   items: CartItem[];
+  drawerOpen: boolean;
   addItem: (item: Omit<CartItem, "quantity">) => void;
   updateQty: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clear: () => void;
+  openDrawer: () => void;
+  closeDrawer: () => void;
 };
 
 const persisted = localStorage.getItem("cartItems");
@@ -21,6 +24,9 @@ const initialItems: CartItem[] = persisted ? (JSON.parse(persisted) as CartItem[
 
 export const useCartStore = create<CartState>((set, get) => ({
   items: initialItems,
+  drawerOpen: false,
+  openDrawer: () => set({ drawerOpen: true }),
+  closeDrawer: () => set({ drawerOpen: false }),
   addItem: (item) => {
     const exists = get().items.find((x) => x.productId === item.productId);
     const next = exists

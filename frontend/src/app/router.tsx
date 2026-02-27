@@ -76,9 +76,8 @@ function MobileCategoryItem({
 function Layout() {
   const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const location = useLocation();
-  const { items, updateQty, removeItem } = useCartStore();
+  const { items, updateQty, removeItem, drawerOpen: isCartDrawerOpen, openDrawer, closeDrawer } = useCartStore();
   const cartItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -90,7 +89,7 @@ function Layout() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsCartDrawerOpen(false);
+    closeDrawer();
   }, [location.pathname]);
 
   useEffect(() => {
@@ -114,19 +113,19 @@ function Layout() {
         isMobileMenuOpen={isMobileMenuOpen}
         isCartDrawerOpen={isCartDrawerOpen}
         onOpenMobileMenu={() => {
-          setIsCartDrawerOpen(false);
+          closeDrawer();
           setIsMobileMenuOpen(true);
         }}
         onOpenCart={() => {
           setIsMobileMenuOpen(false);
-          setIsCartDrawerOpen(true);
+          openDrawer();
         }}
       />
       <div
         className={`mobile-menu-overlay ${isMobileMenuOpen || isCartDrawerOpen ? "open" : ""}`}
         onClick={() => {
           setIsMobileMenuOpen(false);
-          setIsCartDrawerOpen(false);
+          closeDrawer();
         }}
       />
       <aside className={`mobile-menu-drawer ${isMobileMenuOpen ? "open" : ""}`} aria-hidden={!isMobileMenuOpen}>
@@ -165,7 +164,7 @@ function Layout() {
             type="button"
             className="mobile-menu-close"
             aria-label="Cerrar carrito"
-            onClick={() => setIsCartDrawerOpen(false)}
+            onClick={closeDrawer}
           >
             ×
           </button>
@@ -233,12 +232,12 @@ function Layout() {
                 <Link
                   to="/checkout"
                   className="cart-drawer-checkout-btn"
-                  onClick={() => setIsCartDrawerOpen(false)}
+                  onClick={closeDrawer}
                 >
                   Ir al checkout
                 </Link>
                 <div className="cart-drawer-footer-links">
-                  <Link to="/cart" onClick={() => setIsCartDrawerOpen(false)}>
+                  <Link to="/cart" onClick={closeDrawer}>
                     Ver carrito completo
                   </Link>
                 </div>
