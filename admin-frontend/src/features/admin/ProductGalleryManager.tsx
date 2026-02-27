@@ -4,9 +4,10 @@ type ProductGalleryManagerProps = {
   urls: string[];
   onChange: (nextUrls: string[]) => void;
   disabled?: boolean;
+  onPreview?: (url: string) => void;
 };
 
-export function ProductGalleryManager({ urls, onChange, disabled = false }: ProductGalleryManagerProps) {
+export function ProductGalleryManager({ urls, onChange, disabled = false, onPreview }: ProductGalleryManagerProps) {
   const [newUrl, setNewUrl] = useState("");
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -85,7 +86,7 @@ export function ProductGalleryManager({ urls, onChange, disabled = false }: Prod
                 setOverIndex(null);
               }}
             >
-              <img src={url} alt={`Galería ${index + 1}`} className="admin-gallery-image" />
+              <img src={url} alt={`Galería ${index + 1}`} className="admin-gallery-image" onClick={() => onPreview?.(url)} />
               <div className="admin-gallery-meta">
                 <small>Posición {index + 1}</small>
                 {index === 0 && <small className="admin-gallery-badge">Principal</small>}

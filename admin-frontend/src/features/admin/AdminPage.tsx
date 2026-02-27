@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../app/api";
 import { MediaManagerTab } from "./MediaManagerTab";
@@ -54,6 +54,32 @@ type Order = {
   payments: Array<{ id: string; status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"; amount: string }>;
 };
 
+type TabKey = "products" | "categories" | "orders" | "media";
+
+const STATUS_BADGE: Record<string, string> = {
+  PAID: "admin-status-badge--paid",
+  PENDING: "admin-status-badge--pending",
+  CANCELLED: "admin-status-badge--cancelled",
+  SHIPPED: "admin-status-badge--shipped",
+  APPROVED: "admin-status-badge--approved",
+  REJECTED: "admin-status-badge--rejected",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  PAID: "Pagado",
+  PENDING: "Pendiente",
+  CANCELLED: "Cancelado",
+  SHIPPED: "Enviado",
+};
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg className={`admin-order-chevron${open ? " is-open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6" />
+    </svg>
+  );
+}
+
 export function AdminPage() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
@@ -61,12 +87,17 @@ export function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"products" | "categories" | "orders" | "media">("products");
+  const [activeTab, setActiveTab] = useState<TabKey>("products");
+
   const [productQuery, setProductQuery] = useState("");
   const [productCategoryFilter, setProductCategoryFilter] = useState("");
   const [productPage, setProductPage] = useState(1);
+
   const [orderQuery, setOrderQuery] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState<"ALL" | Order["status"]>("ALL");
+  const [orderPage, setOrderPage] = useState(1);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryParentId, setNewCategoryParentId] = useState("");
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -75,19 +106,12 @@ export function AdminPage() {
     const pageSize = 50;
     let page = 1;
     const all: Product[] = [];
-
     while (true) {
-      const res = await api<ProductsResponse>(`/products?page=${page}&pageSize=${pageSize}&includeInactive=true`, {
-        auth: true
-      });
+      const res = await api<ProductsResponse>(`/products?page=${page}&pageSize=${pageSize}&includeInactive=true`, { auth: true });
       all.push(...res.data);
-
-      if (all.length >= res.total || res.data.length === 0) {
-        break;
-      }
+      if (all.length >= res.total || res.data.length === 0) break;
       page += 1;
     }
-
     setProducts(all);
   }
 
@@ -113,6 +137,55 @@ export function AdminPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // --- KPIs ---
+  const totalRevenue = useMemo(() => orders.reduce((acc, o) => acc + Number(o.total), 0), [orders]);
+  const paidOrders = useMemo(() => orders.filter((o) => o.status === "PAID" || o.status === "SHIPPED").length, [orders]);
+
+  // --- Product filtering & pagination ---
+  const visibleProducts = products.filter((product) => {
+    const matchesCategory = !productCategoryFilter || (product.category ?? "") === productCategoryFilter;
+    const query = productQuery.trim().toLowerCase();
+    const matchesQuery = !query || [product.name, product.description, product.category ?? ""].some((v) => v.toLowerCase().includes(query));
+    return matchesCategory && matchesQuery;
+  });
+
+  const productsPerPage = 12;
+  const totalProductPages = Math.max(1, Math.ceil(visibleProducts.length / productsPerPage));
+  const currentProductPage = Math.min(productPage, totalProductPages);
+  const paginatedProducts = visibleProducts.slice(
+    (currentProductPage - 1) * productsPerPage,
+    currentProductPage * productsPerPage
+  );
+  const productStart = (currentProductPage - 1) * productsPerPage + 1;
+  const productEnd = Math.min(currentProductPage * productsPerPage, visibleProducts.length);
+
+  useEffect(() => { setProductPage(1); }, [productQuery, productCategoryFilter]);
+  useEffect(() => { if (productPage > totalProductPages) setProductPage(totalProductPages); }, [productPage, totalProductPages]);
+
+  // --- Order filtering & pagination ---
+  const visibleOrders = orders.filter((order) => {
+    const matchesStatus = orderStatusFilter === "ALL" || order.status === orderStatusFilter;
+    const query = orderQuery.trim().toLowerCase();
+    if (!matchesStatus) return false;
+    if (!query) return true;
+    return [order.id, order.user?.email ?? "", order.user?.fullName ?? "", order.guestEmail ?? "", order.address?.fullName ?? ""].some((v) =>
+      v.toLowerCase().includes(query)
+    );
+  });
+
+  const ordersPerPage = 10;
+  const totalOrderPages = Math.max(1, Math.ceil(visibleOrders.length / ordersPerPage));
+  const currentOrderPage = Math.min(orderPage, totalOrderPages);
+  const paginatedOrders = visibleOrders.slice(
+    (currentOrderPage - 1) * ordersPerPage,
+    currentOrderPage * ordersPerPage
+  );
+  const orderStart = (currentOrderPage - 1) * ordersPerPage + 1;
+  const orderEnd = Math.min(currentOrderPage * ordersPerPage, visibleOrders.length);
+
+  useEffect(() => { setOrderPage(1); }, [orderQuery, orderStatusFilter]);
+  useEffect(() => { if (orderPage > totalOrderPages) setOrderPage(totalOrderPages); }, [orderPage, totalOrderPages]);
+
   async function updateOrderStatus(orderId: string, status: Order["status"]) {
     try {
       setError("");
@@ -134,7 +207,6 @@ export function AdminPage() {
       setError("El nombre de categoria debe tener al menos 2 caracteres.");
       return;
     }
-
     try {
       setError("");
       await api("/products/categories", {
@@ -156,7 +228,6 @@ export function AdminPage() {
       setError("El nombre de categoria debe tener al menos 2 caracteres.");
       return;
     }
-
     try {
       setError("");
       await api(`/products/categories/${category.id}`, {
@@ -172,75 +243,62 @@ export function AdminPage() {
   }
 
   async function deleteCategory(categoryId: string) {
+    if (!window.confirm("¿Estás seguro de que quieres eliminar esta categoría?")) return;
     try {
       setError("");
-      await api(`/products/categories/${categoryId}`, {
-        method: "DELETE",
-        auth: true
-      });
+      await api(`/products/categories/${categoryId}`, { method: "DELETE", auth: true });
       await Promise.all([loadCategories(), loadProducts()]);
     } catch (err) {
       setError((err as Error).message);
     }
   }
 
-  const visibleProducts = products.filter((product) => {
-    const matchesCategory =
-      !productCategoryFilter || (product.category ?? "") === productCategoryFilter;
-    const query = productQuery.trim().toLowerCase();
-    const matchesQuery = !query || [product.name, product.description, product.category ?? ""].some((v) => v.toLowerCase().includes(query));
-    return matchesCategory && matchesQuery;
-  });
-
-  const productsPerPage = 12;
-  const totalProductPages = Math.max(1, Math.ceil(visibleProducts.length / productsPerPage));
-  const currentProductPage = Math.min(productPage, totalProductPages);
-  const paginatedProducts = visibleProducts.slice(
-    (currentProductPage - 1) * productsPerPage,
-    currentProductPage * productsPerPage
-  );
-  const productPageNumbers = Array.from({ length: totalProductPages }, (_, index) => index + 1);
-
-  useEffect(() => {
-    setProductPage(1);
-  }, [productQuery, productCategoryFilter]);
-
-  useEffect(() => {
-    if (productPage > totalProductPages) {
-      setProductPage(totalProductPages);
-    }
-  }, [productPage, totalProductPages]);
-
-  const visibleOrders = orders.filter((order) => {
-    const matchesStatus = orderStatusFilter === "ALL" || order.status === orderStatusFilter;
-    const query = orderQuery.trim().toLowerCase();
-    if (!matchesStatus) return false;
-    if (!query) return true;
-    return [order.id, order.user?.email ?? "", order.user?.fullName ?? "", order.guestEmail ?? ""].some((v) =>
-      v.toLowerCase().includes(query)
-    );
-  });
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: "products", label: "Productos" },
+    { key: "categories", label: "Categorías" },
+    { key: "orders", label: "Órdenes" },
+    { key: "media", label: "Medios" },
+  ];
 
   return (
     <section className="admin-shell">
       <div className="admin-header">
         <h1>Panel Admin</h1>
-        <p>Plataforma de gestion separada del sitio principal.</p>
+        <p>Plataforma de gestión separada del sitio principal.</p>
       </div>
 
-      <div className="row">
-        <button onClick={() => setActiveTab("products")} disabled={activeTab === "products"}>
-          Productos
-        </button>
-        <button onClick={() => setActiveTab("categories")} disabled={activeTab === "categories"}>
-          Categorias
-        </button>
-        <button onClick={() => setActiveTab("orders")} disabled={activeTab === "orders"}>
-          Ordenes
-        </button>
-        <button onClick={() => setActiveTab("media")} disabled={activeTab === "media"}>
-          Medios
-        </button>
+      {!loading && (
+        <div className="admin-kpi-row">
+          <div className="admin-kpi-card">
+            <p className="admin-kpi-label">Productos</p>
+            <p className="admin-kpi-value">{products.length}</p>
+          </div>
+          <div className="admin-kpi-card">
+            <p className="admin-kpi-label">Órdenes</p>
+            <p className="admin-kpi-value">{orders.length}</p>
+          </div>
+          <div className="admin-kpi-card">
+            <p className="admin-kpi-label">Pagadas</p>
+            <p className="admin-kpi-value">{paidOrders}</p>
+          </div>
+          <div className="admin-kpi-card">
+            <p className="admin-kpi-label">Ingresos totales</p>
+            <p className="admin-kpi-value">S/ {totalRevenue.toFixed(2)}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="admin-tab-bar">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            className={`admin-tab${activeTab === tab.key ? " admin-tab--active" : ""}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -249,35 +307,23 @@ export function AdminPage() {
         <p>Cargando panel...</p>
       ) : activeTab === "products" ? (
         <>
-          <div className="row" style={{ justifyContent: "space-between", marginBottom: 8 }}>
+          <div className="row" style={{ justifyContent: "space-between" }}>
             <h3 style={{ margin: 0 }}>Productos</h3>
-            <button type="button" onClick={() => navigate("/products/new")}>
-              Añadir nuevo
+            <button type="button" className="admin-btn-primary" onClick={() => navigate("/products/new")}>
+              + Añadir nuevo
             </button>
           </div>
 
-          <div className="row" style={{ marginTop: 12, marginBottom: 6, flexWrap: "wrap", gap: 10 }}>
+          <div className="row" style={{ gap: 10 }}>
             <input
               value={productQuery}
               onChange={(e) => setProductQuery(e.target.value)}
-              placeholder="Buscar por nombre, descripcion o categoria"
-              style={{ minWidth: 280 }}
+              placeholder="Buscar por nombre, descripción o categoría"
+              style={{ flex: 1, minWidth: 200 }}
             />
-            <select
-              value={productCategoryFilter}
-              onChange={(e) => setProductCategoryFilter(e.target.value)}
-              style={{ minWidth: 180 }}
-              title="Filtrar por categoría"
-            >
-              <option value="">Todas las categorías</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.name}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
           </div>
-          <div className="row admin-category-pills" style={{ marginBottom: 10, flexWrap: "wrap", gap: 6 }}>
+
+          <div className="row admin-category-pills" style={{ gap: 6 }}>
             <button
               type="button"
               onClick={() => setProductCategoryFilter("")}
@@ -314,11 +360,7 @@ export function AdminPage() {
                 {paginatedProducts.map((product) => {
                   const previewImage = product.imageUrl || product.imageUrls?.[0] || "";
                   return (
-                    <tr
-                      key={product.id}
-                      className="admin-products-row"
-                      onClick={() => navigate(`/products/${product.id}`)}
-                    >
+                    <tr key={product.id} className="admin-products-row" onClick={() => navigate(`/products/${product.id}`)}>
                       <td>
                         {previewImage ? (
                           <img src={previewImage} alt="" className="admin-products-thumb" />
@@ -336,9 +378,7 @@ export function AdminPage() {
                         </span>
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
-                        <button type="button" onClick={() => navigate(`/products/${product.id}`)}>
-                          Editar
-                        </button>
+                        <button type="button" onClick={() => navigate(`/products/${product.id}`)}>Editar</button>
                       </td>
                     </tr>
                   );
@@ -346,41 +386,41 @@ export function AdminPage() {
               </tbody>
             </table>
           </div>
-          <div className="row" style={{ marginTop: 12 }}>
-            {productPageNumbers.map((page) => (
-              <button key={page} onClick={() => setProductPage(page)} disabled={currentProductPage === page}>
-                {page}
-              </button>
-            ))}
-          </div>
+
+          {totalProductPages > 1 && (
+            <Pagination
+              current={currentProductPage}
+              total={totalProductPages}
+              onChange={setProductPage}
+              showing={`Mostrando ${productStart}–${productEnd} de ${visibleProducts.length}`}
+            />
+          )}
         </>
       ) : activeTab === "categories" ? (
         <section className="card">
-          <h3>Categorias</h3>
+          <h3>Categorías</h3>
           <form className="row" onSubmit={createCategory} style={{ marginBottom: 12 }}>
             <input
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Nueva categoria"
+              placeholder="Nueva categoría"
               style={{ minWidth: 260 }}
             />
             <select value={newCategoryParentId} onChange={(e) => setNewCategoryParentId(e.target.value)}>
-              <option value="">Sin categoria padre</option>
+              <option value="">Sin categoría padre</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
-            <button type="submit">Agregar</button>
+            <button type="submit" className="admin-btn-primary">Agregar</button>
           </form>
 
           <div className="grid">
             {categories.map((category) => {
               const isEditing = editingCategoryId === category.id;
               return (
-                <article key={category.id} className="card">
-                  <p className="muted" style={{ marginBottom: 6 }}>
+                <article key={category.id} className={`admin-category-card${isEditing ? " is-editing" : ""}`}>
+                  <p className="admin-category-parent">
                     Padre: {category.parent_name ?? "Ninguno"}
                   </p>
                   <input
@@ -389,7 +429,7 @@ export function AdminPage() {
                     onChange={(e) =>
                       setCategories((prev) => prev.map((item) => (item.id === category.id ? { ...item, name: e.target.value } : item)))
                     }
-                    style={{ width: "100%", marginBottom: 10 }}
+                    className="admin-category-input"
                   />
                   <select
                     disabled={!isEditing}
@@ -401,33 +441,31 @@ export function AdminPage() {
                             ? {
                                 ...item,
                                 parent_id: e.target.value || null,
-                                parent_name: categories.find((candidate) => candidate.id === e.target.value)?.name ?? null
+                                parent_name: categories.find((c) => c.id === e.target.value)?.name ?? null
                               }
                             : item
                         )
                       )
                     }
-                    style={{ width: "100%", marginBottom: 10 }}
+                    className="admin-category-input"
                   >
-                    <option value="">Sin categoria padre</option>
+                    <option value="">Sin categoría padre</option>
                     {categories
-                      .filter((candidate) => candidate.id !== category.id)
-                      .map((candidate) => (
-                        <option key={candidate.id} value={candidate.id}>
-                          {candidate.name}
-                        </option>
+                      .filter((c) => c.id !== category.id)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                   </select>
                   <div className="row">
                     {isEditing ? (
                       <>
-                        <button onClick={() => renameCategory(category)}>Guardar</button>
-                        <button onClick={() => setEditingCategoryId(null)}>Cancelar</button>
+                        <button type="button" className="admin-btn-primary" onClick={() => renameCategory(category)}>Guardar</button>
+                        <button type="button" onClick={() => setEditingCategoryId(null)}>Cancelar</button>
                       </>
                     ) : (
-                      <button onClick={() => setEditingCategoryId(category.id)}>Editar</button>
+                      <button type="button" onClick={() => setEditingCategoryId(category.id)}>Editar</button>
                     )}
-                    <button onClick={() => deleteCategory(category.id)}>Eliminar</button>
+                    <button type="button" className="admin-btn-danger" onClick={() => deleteCategory(category.id)}>Eliminar</button>
                   </div>
                 </article>
               );
@@ -437,113 +475,187 @@ export function AdminPage() {
       ) : activeTab === "media" ? (
         <MediaManagerTab />
       ) : (
-        <section className="card">
-          <h3>Ordenes</h3>
-          <div className="row" style={{ marginBottom: 10 }}>
+        <section>
+          <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
+            <h3 style={{ margin: 0 }}>Órdenes</h3>
+          </div>
+          <div className="row" style={{ gap: 10, marginBottom: 12 }}>
             <input
               value={orderQuery}
               onChange={(e) => setOrderQuery(e.target.value)}
               placeholder="Buscar por ID, email o nombre"
-              style={{ minWidth: 320 }}
+              style={{ flex: 1, minWidth: 200 }}
             />
             <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value as "ALL" | Order["status"])}>
-              <option value="ALL">TODAS</option>
-              <option value="PENDING">PENDING</option>
-              <option value="PAID">PAID</option>
-              <option value="CANCELLED">CANCELLED</option>
-              <option value="SHIPPED">SHIPPED</option>
+              <option value="ALL">Todos los estados</option>
+              <option value="PENDING">Pendiente</option>
+              <option value="PAID">Pagado</option>
+              <option value="CANCELLED">Cancelado</option>
+              <option value="SHIPPED">Enviado</option>
             </select>
           </div>
 
-          {visibleOrders.map((order) => {
-            const subtotal = order.items.reduce((acc, item) => acc + Number(item.productPrice) * item.quantity, 0);
-            const customerName = order.address?.fullName ?? order.user?.fullName ?? order.user?.email ?? order.guestEmail ?? "Sin datos";
-            const customerEmail = order.user?.email ?? order.guestEmail ?? "—";
-            const customerPhone = order.address?.phone ?? "—";
+          {paginatedOrders.length === 0 ? (
+            <p className="muted">No hay órdenes que coincidan con la búsqueda.</p>
+          ) : (
+            paginatedOrders.map((order) => {
+              const isExpanded = expandedOrderId === order.id;
+              const subtotal = order.items.reduce((acc, item) => acc + Number(item.productPrice) * item.quantity, 0);
+              const customerName = order.address?.fullName ?? order.user?.fullName ?? order.user?.email ?? order.guestEmail ?? "Sin datos";
+              const customerEmail = order.user?.email ?? order.guestEmail ?? "—";
+              const customerPhone = order.address?.phone ?? "—";
 
-            return (
-              <div key={order.id} className="card" style={{ marginBottom: 12 }}>
-                <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <strong style={{ fontSize: "0.85rem", color: "#6b7280" }}>#{order.id}</strong>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#9ca3af" }}>
-                      {new Date(order.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value as Order["status"])}>
-                    <option value="PENDING">PENDING</option>
-                    <option value="PAID">PAID</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                    <option value="SHIPPED">SHIPPED</option>
-                  </select>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: 12 }}>
-                  <div>
-                    <strong style={{ fontSize: "0.82rem", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Cliente</strong>
-                    <p style={{ margin: "4px 0 0" }}>{customerName}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>{customerEmail}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>Tel: {customerPhone}</p>
-                    {order.address?.documentNumber && (
-                      <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>
-                        {(order.address.documentType || "DNI").toUpperCase()}: {order.address.documentNumber}
-                      </p>
-                    )}
+              return (
+                <div key={order.id} className="admin-order-card">
+                  <div className="admin-order-summary" onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}>
+                    <span className="admin-order-id">#{order.id.slice(-6)}</span>
+                    <span className="admin-order-date">{new Date(order.createdAt).toLocaleDateString()}</span>
+                    <span className={`admin-status-badge ${STATUS_BADGE[order.status] ?? ""}`}>
+                      {STATUS_LABEL[order.status] ?? order.status}
+                    </span>
+                    <span className="admin-order-customer">{customerName}</span>
+                    <span className="admin-order-total">S/ {Number(order.total).toFixed(2)}</span>
+                    <Chevron open={isExpanded} />
                   </div>
 
-                  {order.address && (
-                    <div>
-                      <strong style={{ fontSize: "0.82rem", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Envío</strong>
-                      <p style={{ margin: "4px 0 0" }}>{order.address.street}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>
-                        {order.address.district ? `${order.address.district}, ` : ""}{order.address.city}, {order.address.state}
-                      </p>
-                      <p style={{ margin: "2px 0 0", fontSize: "0.9rem", color: "#4b5563" }}>
-                        CP: {order.address.postalCode} — {order.address.country}
-                      </p>
+                  {isExpanded && (
+                    <div className="admin-order-details">
+                      <div className="admin-order-status-row">
+                        <span className="admin-order-label" style={{ margin: 0 }}>Cambiar estado:</span>
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value as Order["status"])}
+                        >
+                          <option value="PENDING">Pendiente</option>
+                          <option value="PAID">Pagado</option>
+                          <option value="CANCELLED">Cancelado</option>
+                          <option value="SHIPPED">Enviado</option>
+                        </select>
+                      </div>
+
+                      <div className="admin-order-grid">
+                        <div>
+                          <p className="admin-order-label">Cliente</p>
+                          <p className="admin-order-text">{customerName}</p>
+                          <p className="admin-order-text">{customerEmail}</p>
+                          <p className="admin-order-text">Tel: {customerPhone}</p>
+                          {order.address?.documentNumber && (
+                            <p className="admin-order-text">
+                              {(order.address.documentType || "DNI").toUpperCase()}: {order.address.documentNumber}
+                            </p>
+                          )}
+                        </div>
+
+                        {order.address && (
+                          <div>
+                            <p className="admin-order-label">Envío</p>
+                            <p className="admin-order-text">{order.address.street}</p>
+                            <p className="admin-order-text">
+                              {order.address.district ? `${order.address.district}, ` : ""}{order.address.city}, {order.address.state}
+                            </p>
+                            <p className="admin-order-text">
+                              CP: {order.address.postalCode} — {order.address.country}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="admin-order-items">
+                        <p className="admin-order-label">Productos</p>
+                        {order.items.map((item) => (
+                          <div key={item.id} className="admin-order-item-row">
+                            <span>{item.productName} x{item.quantity}</span>
+                            <span>S/ {(Number(item.productPrice) * item.quantity).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="admin-order-totals">
+                        <div className="admin-order-total-row">
+                          <span>Subtotal productos</span>
+                          <span>S/ {subtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="admin-order-total-row">
+                          <span>Envío</span>
+                          <span>S/ {Number(order.shippingCost).toFixed(2)}</span>
+                        </div>
+                        <div className="admin-order-total-row">
+                          <span>Comisión MP</span>
+                          <span>S/ {Number(order.mpCommission).toFixed(2)}</span>
+                        </div>
+                        <div className="admin-order-total-row admin-order-total-row--bold">
+                          <span>Total</span>
+                          <span>S/ {Number(order.total).toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      {order.payments.length > 0 && (
+                        <div className="admin-order-payment">
+                          Pago: {order.payments.map((p) => (
+                            <span key={p.id}>
+                              <span className={`admin-status-badge ${STATUS_BADGE[p.status] ?? ""}`}>{p.status}</span>
+                              {" "}S/ {Number(p.amount).toFixed(2)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
+              );
+            })
+          )}
 
-                <div style={{ marginTop: 12 }}>
-                  <strong style={{ fontSize: "0.82rem", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>Productos</strong>
-                  {order.items.map((item) => (
-                    <div key={item.id} style={{ display: "flex", justifyContent: "space-between", margin: "4px 0 0" }}>
-                      <span>{item.productName} x{item.quantity}</span>
-                      <span>S/ {(Number(item.productPrice) * item.quantity).toFixed(2)}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ marginTop: 12, borderTop: "1px solid #e5e7eb", paddingTop: 10 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#4b5563" }}>
-                    <span>Subtotal productos</span>
-                    <span>S/ {subtotal.toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#4b5563" }}>
-                    <span>Envío</span>
-                    <span>S/ {Number(order.shippingCost).toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#4b5563" }}>
-                    <span>Comisión MP</span>
-                    <span>S/ {Number(order.mpCommission).toFixed(2)}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, marginTop: 4 }}>
-                    <span>Total</span>
-                    <span>S/ {Number(order.total).toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {order.payments.length > 0 && (
-                  <div style={{ marginTop: 10, fontSize: "0.85rem", color: "#6b7280" }}>
-                    Pago: {order.payments.map((p) => `${p.status} — S/ ${Number(p.amount).toFixed(2)}`).join(", ")}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {totalOrderPages > 1 && (
+            <Pagination
+              current={currentOrderPage}
+              total={totalOrderPages}
+              onChange={setOrderPage}
+              showing={`Mostrando ${orderStart}–${orderEnd} de ${visibleOrders.length}`}
+            />
+          )}
         </section>
       )}
     </section>
+  );
+}
+
+function Pagination({ current, total, onChange, showing }: { current: number; total: number; onChange: (p: number) => void; showing: string }) {
+  const pages: number[] = [];
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= current - 1 && i <= current + 1)) {
+      pages.push(i);
+    }
+  }
+
+  const items: (number | "...")[] = [];
+  for (let i = 0; i < pages.length; i++) {
+    if (i > 0 && pages[i] - pages[i - 1] > 1) items.push("...");
+    items.push(pages[i]);
+  }
+
+  return (
+    <div className="admin-pagination">
+      <span className="admin-pagination-info">{showing}</span>
+      <div className="admin-pagination-buttons">
+        <button type="button" disabled={current <= 1} onClick={() => onChange(current - 1)}>‹</button>
+        {items.map((item, idx) =>
+          item === "..." ? (
+            <span key={`dots-${idx}`} style={{ padding: "0 4px", color: "#9ca3af" }}>…</span>
+          ) : (
+            <button
+              key={item}
+              type="button"
+              className={current === item ? "is-current" : ""}
+              onClick={() => onChange(item)}
+              disabled={current === item}
+            >
+              {item}
+            </button>
+          )
+        )}
+        <button type="button" disabled={current >= total} onClick={() => onChange(current + 1)}>›</button>
+      </div>
+    </div>
   );
 }

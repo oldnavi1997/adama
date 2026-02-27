@@ -209,20 +209,18 @@ export function MediaManagerTab() {
               {asset.resourceType === "video" ? (
                 <video src={asset.url} className="admin-media-preview" controls />
               ) : (
-                <img src={asset.url} alt={asset.originalName} className="admin-media-preview" />
+                <img src={asset.url} alt={asset.originalName} className="admin-media-preview" loading="lazy" />
               )}
-              <div>
-                <p style={{ margin: "0 0 4px 0" }}>{asset.originalName}</p>
-                <p className="muted" style={{ margin: 0 }}>
-                  {(asset.bytes / (1024 * 1024)).toFixed(2)} MB
+              <div className="admin-media-info">
+                <p className="admin-media-name" title={asset.originalName}>{asset.originalName}</p>
+                <p className="admin-media-size">
+                  {asset.bytes < 1048576
+                    ? `${(asset.bytes / 1024).toFixed(1)} KB`
+                    : `${(asset.bytes / 1048576).toFixed(2)} MB`}
                 </p>
-                {asset.folder ? (
-                  <p className="muted" style={{ margin: "2px 0 0 0" }}>
-                    {asset.folder}
-                  </p>
-                ) : null}
+                {asset.folder && <p className="admin-media-folder">{asset.folder}</p>}
               </div>
-              <div className="row">
+              <div className="admin-media-actions">
                 <button
                   type="button"
                   onClick={async () => {
@@ -239,7 +237,7 @@ export function MediaManagerTab() {
                   Abrir
                 </a>
                 {asset.id ? (
-                  <button type="button" onClick={() => deleteAsset(asset)}>
+                  <button type="button" className="admin-btn-danger" onClick={() => deleteAsset(asset)}>
                     Eliminar
                   </button>
                 ) : null}

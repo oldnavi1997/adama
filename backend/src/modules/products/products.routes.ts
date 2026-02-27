@@ -383,12 +383,14 @@ productsRouter.get("/:id", async (req, res) => {
 productsRouter.post("/", requireAuth, requireRole(UserRole.ADMIN), validateBody(productSchema), async (req, res) => {
   const payload = req.body;
   const imageUrls = normalizeImageUrls(payload.imageUrls);
+  const contentImages = normalizeImageUrls(payload.contentImages);
   const imageUrl = String(payload.imageUrl ?? "").trim() || imageUrls[0] || "";
   const product = await prisma.product.create({
     data: {
       ...payload,
       imageUrl,
       imageUrls,
+      contentImages,
       price: payload.price.toFixed(2)
     }
   });
@@ -402,6 +404,7 @@ productsRouter.post("/", requireAuth, requireRole(UserRole.ADMIN), validateBody(
 productsRouter.put("/:id", requireAuth, requireRole(UserRole.ADMIN), validateBody(productSchema), async (req, res) => {
   const payload = req.body;
   const imageUrls = normalizeImageUrls(payload.imageUrls);
+  const contentImages = normalizeImageUrls(payload.contentImages);
   const imageUrl = String(payload.imageUrl ?? "").trim() || imageUrls[0] || "";
   const product = await prisma.product.update({
     where: { id: req.params.id },
@@ -409,6 +412,7 @@ productsRouter.put("/:id", requireAuth, requireRole(UserRole.ADMIN), validateBod
       ...payload,
       imageUrl,
       imageUrls,
+      contentImages,
       price: payload.price.toFixed(2)
     }
   });
@@ -430,4 +434,18 @@ productsRouter.patch("/:id/status", requireAuth, requireRole(UserRole.ADMIN), as
     redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
   ]);
   res.json(product);
+});
+
+productsRouter.delete("/:id", requireAuth, requireRole(UserRole.ADMIN), async (req, res) => {
+  const product = await prisma.product.findUnique({ where: { id: req.params.id } });
+  if (!product) {
+    res.status(404).json({ message: "Product not found" });
+    return;
+  }
+  await prisma.product.delete({ where: { id: req.params.id } });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
+  res.status(204).send();
 });

@@ -12,6 +12,7 @@ type ProductDetail = {
   stock: number;
   imageUrl?: string | null;
   imageUrls?: string[];
+  contentImages?: string[];
   category?: string | null;
 };
 
@@ -196,11 +197,9 @@ export function ProductDetailPage() {
           <h1 style={{ marginTop: 0 }}>{product.name}</h1>
           {product.category && <p className="muted">Categoria: {product.category}</p>}
           <p className="product-price">S/ {Number(product.price).toFixed(2)}</p>
-          <p className="product-bullets">
-            • Material: Plata/acero segun modelo. • Tamaño: Ajustable. • Uso: Ideal para parejas.
-          </p>
-          <p className="muted">Stock disponible: {product.stock}</p>
-          <p>{product.description}</p>
+          {/* <p className="muted">Stock disponible: {product.stock}</p>
+          <p>{product.description}</p> */}
+          <p>{product.description}</p> 
 
           <button
             onClick={() =>
@@ -216,43 +215,86 @@ export function ProductDetailPage() {
           >
             {product.stock < 1 ? "Sin stock" : "Agregar al carrito"}
           </button>
+
+          <div className="product-collapse-group">
+            {/*<details className="product-collapse">
+              <summary>
+                <span>Detalles del producto</span>
+                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <div className="product-collapse-body">
+                <ul>
+                  <li>Tipo: {product.category || "Producto general"}</li>
+                  <li>Modelo: Producto de catálogo</li>
+                  <li>Precio unitario: S/ {Number(product.price).toFixed(2)}</li>
+                  <li>Disponibilidad: {product.stock > 0 ? "En stock" : "Agotado"}</li>
+                </ul>
+              </div>
+            </details>*/}
+            <details className="product-collapse">
+              <summary>
+                <span>Talla</span>
+                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <div className="product-collapse-body">
+                <p className="muted">Una talla para todos.</p>
+                <ul>
+                  <li>Ajustable para mayor comodidad.</li>
+                  <li>Ideal para diferentes dedos y uso diario.</li>
+                  <li>Mantiene su forma y acabado después del ajuste.</li>
+                </ul>
+              </div>
+            </details>
+
+            <details className="product-collapse">
+              <summary>
+                <span>Envío y entrega</span>
+                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <div className="product-collapse-body">
+                <p className="muted">Envíos disponibles por Shalom y Olva Courier.</p>
+                <ul>
+                  <li>Shalom: recojo en agencia, desde S/ 8.</li>
+                  <li>Olva Courier: agencia o delivery, desde S/ 12.</li>
+                  <li>Tiempo estimado: 1 a 3 días hábiles según ciudad.</li>
+                </ul>
+              </div>
+            </details>
+
+            <details className="product-collapse">
+              <summary>
+                <span>Grabado (opcional)</span>
+                <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <div className="product-collapse-body">
+                <p className="muted">Máximo 20 caracteres. A-Z 0-9 y símbolos básicos.</p>
+              </div>
+            </details>
+          </div>
         </div>
       </article>
 
-      <section className="card product-section">
-        <h3>Detalles del producto</h3>
-        <ul>
-          <li>Tipo: {product.category || "Producto general"}</li>
-          <li>Modelo: Producto de catalogo</li>
-          <li>Precio unitario: S/ {Number(product.price).toFixed(2)}</li>
-          <li>Disponibilidad: {product.stock > 0 ? "En stock" : "Agotado"}</li>
-        </ul>
-      </section>
-
-      <section className="card product-section">
-        <h3>Talla</h3>
-        <p className="muted">Una talla para todos.</p>
-        <ul>
-          <li>Ajustable para mayor comodidad.</li>
-          <li>Ideal para diferentes dedos y uso diario.</li>
-          <li>Mantiene su forma y acabado despues del ajuste.</li>
-        </ul>
-      </section>
-
-      <section className="card product-section">
-        <h3>Envio y entrega</h3>
-        <p className="muted">Envios disponibles por Shalom y Olva Courier.</p>
-        <ul>
-          <li>Shalom: recojo en agencia, desde S/ 8.</li>
-          <li>Olva Courier: agencia o delivery, desde S/ 12.</li>
-          <li>Tiempo estimado: 1 a 3 dias habiles segun ciudad.</li>
-        </ul>
-      </section>
-
-      <section className="card product-section">
-        <h3>Grabado (opcional)</h3>
-        <p className="muted">Maximo 20 caracteres. A-Z 0-9 y simbolos basicos.</p>
-      </section>
+      {product.contentImages && product.contentImages.length > 0 && (
+        <div className="product-content-images">
+          {product.contentImages.map((url, i) => (
+            <img
+              key={i}
+              src={url}
+              alt={`${product.name} ${i + 1}`}
+              loading="lazy"
+              className="product-content-img"
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
