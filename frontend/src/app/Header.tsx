@@ -29,6 +29,7 @@ type HeaderProps = {
   isCartDrawerOpen: boolean;
   onOpenMobileMenu: () => void;
   onOpenCart: () => void;
+  onOpenSearch: () => void;
 };
 
 export function Header({
@@ -37,7 +38,8 @@ export function Header({
   isMobileMenuOpen,
   isCartDrawerOpen,
   onOpenMobileMenu,
-  onOpenCart
+  onOpenCart,
+  onOpenSearch
 }: HeaderProps) {
   return (
     <header className="site-header" role="banner">
@@ -71,7 +73,20 @@ export function Header({
             </ul>
           </nav>
         )}
-        <nav className="cart-trigger-nav">
+
+        <div className="header-actions">
+          <button
+            type="button"
+            className="search-toggle-btn"
+            aria-label="Buscar productos"
+            onClick={onOpenSearch}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M20 20l-4.35-4.35" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+
           <button
             type="button"
             className="cart-icon-button"
@@ -93,7 +108,7 @@ export function Header({
             </svg>
             {cartItemsCount > 0 ? <span className="cart-badge">{cartItemsCount}</span> : null}
           </button>
-        </nav>
+        </div>
       </div>
     </header>
   );

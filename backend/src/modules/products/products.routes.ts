@@ -136,34 +136,51 @@ productsRouter.get("/", async (req, res) => {
     }
   }
 
+  let searchMatchIds: string[] | null = null;
+  if (search) {
+    const pattern = `%${search}%`;
+    const matchRows = await prisma.$queryRawUnsafe<{ id: string }[]>(
+      `SELECT id FROM "Product"
+       WHERE unaccent("name") ILIKE unaccent($1) OR unaccent("description") ILIKE unaccent($2)
+       ORDER BY CASE WHEN unaccent("name") ILIKE unaccent($1) THEN 0 ELSE 1 END, "name" ASC`,
+      pattern,
+      pattern
+    );
+    searchMatchIds = matchRows.map((r) => r.id);
+  }
+
   const productWhere = {
     ...(includeInactive && isAdmin ? {} : { isActive: true }),
-    ...(search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { description: { contains: search, mode: "insensitive" as const } }
-          ]
-        }
-      : {}),
+    ...(searchMatchIds !== null ? { id: { in: searchMatchIds } } : {}),
     ...(categories.length > 0 ? { category: { in: categories } } : category ? { category } : {})
   };
 
-  const products = await prisma.product.findMany({
+  const hasExplicitSort = sortBy !== "latest";
+
+  let products = await prisma.product.findMany({
     where: productWhere,
-    orderBy:
-      sortBy === "price-asc"
-        ? { price: "asc" }
-        : sortBy === "price-desc"
-          ? { price: "desc" }
-          : sortBy === "name-asc"
-            ? { name: "asc" }
-            : sortBy === "name-desc"
-              ? { name: "desc" }
-              : { createdAt: "desc" },
+    ...(hasExplicitSort || !searchMatchIds
+      ? {
+          orderBy:
+            sortBy === "price-asc"
+              ? { price: "asc" }
+              : sortBy === "price-desc"
+                ? { price: "desc" }
+                : sortBy === "name-asc"
+                  ? { name: "asc" }
+                  : sortBy === "name-desc"
+                    ? { name: "desc" }
+                    : { createdAt: "desc" }
+        }
+      : {}),
     skip: (page - 1) * pageSize,
     take: pageSize
   });
+
+  if (searchMatchIds && !hasExplicitSort) {
+    const idOrder = new Map(searchMatchIds.map((id, i) => [id, i]));
+    products = products.sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999));
+  }
 
   const total = await prisma.product.count({ where: productWhere });
 
