@@ -14,6 +14,7 @@ type ProductDetail = {
   imageUrls?: string[];
   contentImages?: string[];
   productDetails?: string;
+  sizeInfo?: string;
   category?: string | null;
 };
 
@@ -264,20 +265,15 @@ export function ProductDetailPage() {
               </details>
             )}
 
-            <details className="product-collapse">
-              <summary>
-                <span>Talla</span>
-                <CollapseChevron />
-              </summary>
-              <div className="product-collapse-body">
-                <p className="muted">Una talla para todos.</p>
-                <ul>
-                  <li>Ajustable para mayor comodidad.</li>
-                  <li>Ideal para diferentes dedos y uso diario.</li>
-                  <li>Mantiene su forma y acabado después del ajuste.</li>
-                </ul>
-              </div>
-            </details>
+            {product.sizeInfo && product.sizeInfo.trim() !== "" && (
+              <details className="product-collapse">
+                <summary>
+                  <span>Talla</span>
+                  <CollapseChevron />
+                </summary>
+                <div className="product-collapse-body product-description" dangerouslySetInnerHTML={{ __html: product.sizeInfo }} />
+              </details>
+            )}
 
             <details className="product-collapse">
               <summary>

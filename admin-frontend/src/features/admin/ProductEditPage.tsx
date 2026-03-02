@@ -16,6 +16,7 @@ type Product = {
   imageUrls?: string[];
   contentImages?: string[];
   productDetails?: string;
+  sizeInfo?: string;
   isActive: boolean;
 };
 
@@ -43,6 +44,7 @@ function productSnapshot(p: Product): string {
     imageUrls: p.imageUrls ?? [],
     contentImages: p.contentImages ?? [],
     productDetails: p.productDetails ?? "",
+    sizeInfo: p.sizeInfo ?? "",
     isActive: p.isActive
   });
 }
@@ -117,6 +119,7 @@ export function ProductEditPage() {
           imageUrls: product.imageUrls ?? [],
           contentImages: product.contentImages ?? [],
           productDetails: product.productDetails ?? "",
+          sizeInfo: product.sizeInfo ?? "",
           isActive: product.isActive
         })
       });
@@ -325,6 +328,15 @@ export function ProductEditPage() {
               onChange={(html) => setProduct((prev) => (prev ? { ...prev, productDetails: html } : prev))}
               placeholder="Detalles del producto (materiales, medidas, cuidados...)"
               minHeight={140}
+            />
+          </div>
+          <div>
+            <label className="admin-field-label">Información de talla</label>
+            <ClassicEditor
+              value={product.sizeInfo ?? ""}
+              onChange={(html) => setProduct((prev) => (prev ? { ...prev, sizeInfo: html } : prev))}
+              placeholder="Información de talla (ajustable, talla única, medidas...)"
+              minHeight={100}
             />
           </div>
           <div>

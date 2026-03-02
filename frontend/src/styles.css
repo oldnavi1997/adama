@@ -2570,6 +2570,8 @@ main.container {
 
 .footer-payment-icon svg {
   display: block;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .footer-payment-icon-text {

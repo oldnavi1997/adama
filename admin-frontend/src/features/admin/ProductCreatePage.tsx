@@ -22,6 +22,7 @@ export function ProductCreatePage() {
     name: "",
     description: "",
     productDetails: "",
+    sizeInfo: "",
     price: 0,
     stock: 0,
     category: "",
@@ -62,7 +63,8 @@ export function ProductCreatePage() {
           imageUrls: galleryUrls,
           name: normalizedName,
           description: normalizedDescription,
-          productDetails: form.productDetails.trim()
+          productDetails: form.productDetails.trim(),
+          sizeInfo: form.sizeInfo.trim()
         })
       });
       navigate("/");
@@ -116,6 +118,15 @@ export function ProductCreatePage() {
             onChange={(html) => setForm((p) => ({ ...p, productDetails: html }))}
             placeholder="Detalles del producto (materiales, medidas, cuidados...)"
             minHeight={140}
+          />
+        </div>
+        <div>
+          <label className="admin-field-label">Información de talla</label>
+          <ClassicEditor
+            value={form.sizeInfo}
+            onChange={(html) => setForm((p) => ({ ...p, sizeInfo: html }))}
+            placeholder="Información de talla (ajustable, talla única, medidas...)"
+            minHeight={100}
           />
         </div>
         <div>
