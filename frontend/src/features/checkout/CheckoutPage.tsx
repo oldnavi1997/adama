@@ -240,7 +240,7 @@ export function CheckoutPage() {
           productId: item.productId,
           quantity: item.quantity
         })),
-        shippingCost,
+        courier,
         mpCommission: Number(mpCommission.toFixed(2))
       };
 

@@ -8,6 +8,22 @@ import { orderSchema, type CreateOrderInput } from "./orders.schema.js";
 import { createPreference } from "../payments/mercadopago.js";
 import { verifyAccessToken } from "../../lib/auth.js";
 
+const OLVA_PRICE_BY_DEPARTMENT: Record<string, number> = {
+  Amazonas: 18, Ancash: 18, Apurimac: 15, Ayacucho: 15, Cajamarca: 16,
+  Cusco: 15, Huancavelica: 16, Huanuco: 18, Ica: 15, Junin: 16,
+  "La Libertad": 16, Lambayeque: 18, Lima: 15, Loreto: 20,
+  "Madre de Dios": 16, Moquegua: 12, Pasco: 16, Piura: 18, Puno: 12,
+  "San Martin": 18, Tacna: 12, Tumbes: 20, Ucayali: 16,
+  Arequipa: 15, Callao: 15
+};
+
+function calculateShippingCost(courier: string, state: string): number {
+  if (courier === "olva") {
+    return OLVA_PRICE_BY_DEPARTMENT[state] ?? 15;
+  }
+  return 0; // Shalom: recojo en agencia, sin costo adicional
+}
+
 export const ordersRouter = Router();
 
 ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
@@ -32,7 +48,7 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
     }
     total += Number(product.price) * item.quantity;
   }
-  const shippingCost = Number(payload.shippingCost ?? 0);
+  const shippingCost = calculateShippingCost(payload.courier ?? "shalom", payload.address.state);
   const mpCommission = Number(payload.mpCommission ?? 0);
   total += shippingCost + mpCommission;
 

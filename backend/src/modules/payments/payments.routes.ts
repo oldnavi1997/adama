@@ -78,6 +78,16 @@ paymentsRouter.post("/process", async (req, res) => {
       return;
     }
 
+    const clientAmount = typeof formData.transaction_amount === "number" ? formData.transaction_amount : null;
+    if (clientAmount !== null) {
+      const storedAmount = Number(payment.amount);
+      const diff = Math.abs(clientAmount - storedAmount);
+      if (diff > 0.01) {
+        res.status(400).json({ message: "transaction_amount does not match the order total" });
+        return;
+      }
+    }
+
     if (env.skipPayment) {
       const fakePaymentId = Date.now();
       await prisma.payment.update({

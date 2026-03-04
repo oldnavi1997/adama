@@ -22,7 +22,7 @@ export const orderSchema = z.object({
       })
     )
     .min(1),
-  shippingCost: z.number().min(0).optional(),
+  courier: z.enum(["shalom", "olva"]).optional().default("shalom"),
   mpCommission: z.number().min(0).optional()
 });
 
