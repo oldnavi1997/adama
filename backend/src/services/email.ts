@@ -50,7 +50,11 @@ function createTransporter() {
 }
 
 export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<void> {
-  if (!env.emailEnabled) return;
+  if (!env.emailEnabled) {
+    // eslint-disable-next-line no-console
+    console.log("[EMAIL] disabled (EMAIL_ENABLED != 'true') — skipping for order", order.id);
+    return;
+  }
   if (!env.smtpHost || !env.smtpUser || !env.smtpPass) {
     // eslint-disable-next-line no-console
     console.warn("[EMAIL] SMTP not configured — skipping order confirmation email");
