@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma.js";
 import { env } from "../../config/env.js";
 import { getPaymentById, processPayment } from "./mercadopago.js";
 import { redisSetNxEx } from "../../lib/redis.js";
+import { sendOrderConfirmationEmail } from "../../services/email.js";
 
 export const paymentsRouter = Router();
 
@@ -102,6 +103,11 @@ paymentsRouter.post("/process", async (req, res) => {
         where: { id: orderId },
         data: { status: "PAID" }
       });
+      const skipOrder = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: { include: { product: { select: { imageUrl: true } } } }, address: true, user: true }
+      });
+      if (skipOrder) sendOrderConfirmationEmail(skipOrder).catch(console.error);
       res.json({ status: "approved", status_detail: "dev_skip", payment_id: fakePaymentId });
       return;
     }
@@ -134,6 +140,11 @@ paymentsRouter.post("/process", async (req, res) => {
         where: { id: orderId },
         data: { status: "PAID" }
       });
+      const fullOrder = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: { items: { include: { product: { select: { imageUrl: true } } } }, address: true, user: true }
+      });
+      if (fullOrder) sendOrderConfirmationEmail(fullOrder).catch(console.error);
     }
 
     res.json({
@@ -246,6 +257,11 @@ paymentsRouter.post("/webhook", async (req, res) => {
         where: { id: referencePayment.orderId },
         data: { status: "PAID" }
       });
+      const fullOrder = await prisma.order.findUnique({
+        where: { id: referencePayment.orderId },
+        include: { items: { include: { product: { select: { imageUrl: true } } } }, address: true, user: true }
+      });
+      if (fullOrder) sendOrderConfirmationEmail(fullOrder).catch(console.error);
     }
 
     if (env.logWebhookEvents) {
