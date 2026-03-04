@@ -180,6 +180,25 @@ header nav {
 
 /* ── Search drawer ── */
 
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mobile-menu-close {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
 .search-drawer {
   position: fixed;
   top: 0;
@@ -2880,6 +2899,18 @@ main.container {
 .product-description a {
   color: #111827;
   text-decoration: underline;
+}
+
+/* Out of stock badge */
+.product-out-of-stock {
+  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
 }
 
 /* Add-to-cart button */

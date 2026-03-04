@@ -94,6 +94,15 @@ export function ProductDetailPage() {
     return () => { document.title = "Adamantio"; };
   }, [product]);
 
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lightboxOpen]);
+
   if (loading) {
     return <p>Cargando producto...</p>;
   }
@@ -246,6 +255,9 @@ export function ProductDetailPage() {
             <div className="product-description" dangerouslySetInnerHTML={{ __html: product.description }} />
           )}
 
+          {product.stock < 1 && (
+            <span className="product-out-of-stock">Sin stock</span>
+          )}
           <button
             className={`product-add-btn${addedFeedback ? " is-added" : ""}`}
             onClick={handleAddToCart}
@@ -320,7 +332,7 @@ export function ProductDetailPage() {
       {lightboxOpen && currentImage && (
         <div className="product-lightbox" onClick={() => setLightboxOpen(false)}>
           <img src={currentImage} alt={product.name} onClick={(e) => e.stopPropagation()} />
-          <button type="button" className="product-lightbox-close" onClick={() => setLightboxOpen(false)}>✕</button>
+          <button type="button" className="product-lightbox-close" onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}>✕</button>
           {hasMultipleImages && (
             <>
               <button type="button" className="product-lightbox-nav product-lightbox-nav--prev" onClick={(e) => { e.stopPropagation(); goPrevious(); }}>‹</button>
