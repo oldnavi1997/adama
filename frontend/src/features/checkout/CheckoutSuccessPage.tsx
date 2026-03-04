@@ -1,10 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { initMercadoPago, StatusScreen } from "@mercadopago/sdk-react";
 import { api } from "../../app/api";
 import { useCartStore } from "../cart/cart.store";
-
-const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY as string;
 
 type OrderSummary = {
   id: string;
@@ -55,15 +52,6 @@ export function CheckoutSuccessPage() {
   const { clear } = useCartStore();
 
   const orderId = useMemo(() => resolveOrderId(searchParams), [searchParams]);
-  const paymentId = searchParams.get("payment_id");
-
-  const mpInitialized = useRef(false);
-  useEffect(() => {
-    if (MP_PUBLIC_KEY && !mpInitialized.current) {
-      initMercadoPago(MP_PUBLIC_KEY, { locale: "es-PE" });
-      mpInitialized.current = true;
-    }
-  }, []);
 
   useEffect(() => {
     async function loadOrderSummary() {
@@ -103,11 +91,6 @@ export function CheckoutSuccessPage() {
       <h1 style={{ marginBottom: 4 }}>Pago recibido</h1>
       <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>Gracias por tu compra. Este es el resumen de tu orden.</p>
 
-      {paymentId && (
-        <div style={{ maxWidth: 500, margin: "0 auto 1.5rem" }}>
-          <StatusScreen initialization={{ paymentId: paymentId }} />
-        </div>
-      )}
 
       {loading && <p>Cargando detalle de compra...</p>}
       {error && <p style={{ color: "crimson" }}>{error}</p>}
