@@ -604,7 +604,7 @@ export function CheckoutPage() {
                           paymentMethods: {
                             creditCard: "all",
                             debitCard: "all",
-                            mercadoPago: ["wallet_purchase"]
+                            mercadoPago: "none"
                           }
                         }}
                         onSubmit={async ({ formData }) => {
