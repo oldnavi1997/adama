@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mercadopago/sdk-react": "^1.0.7",
+    "@tanstack/react-query": "^5.90.21",
     "keepalive-for-react": "^4.0.3",
     "keepalive-for-react-router": "^1.0.1",
     "react": "^18.3.1",

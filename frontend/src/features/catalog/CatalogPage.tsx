@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../../app/api";
 import { productDetailPath, slugify } from "../../app/slug";
+import { useProducts, queryClient } from "../../app/queries";
+import { api } from "../../app/api";
 
 const META_TITLE = "Adamantio | Anillos de Promesa y Joyería Plata 925 – Regalos con Significado en Perú";
 const META_DESCRIPTION =
@@ -36,29 +37,18 @@ type Product = {
 };
 
 export function CatalogPage() {
-  const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sortBy, setSortBy] = useState("default");
+
+  const { data: productsData } = useProducts(search, category);
+  const products = productsData?.data ?? [];
 
   useEffect(() => {
     document.title = META_TITLE;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute("content", META_DESCRIPTION);
   }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams({
-      search
-    });
-    if (category) {
-      params.set("category", category);
-    }
-
-    api<{ data: Product[] }>(`/products?${params.toString()}`)
-      .then((res) => setProducts(res.data))
-      .catch(() => setProducts([]));
-  }, [search, category]);
 
   const categories = useMemo(() => {
     return Array.from(new Set(products.map((product) => product.category).filter(Boolean))).sort() as string[];
@@ -170,7 +160,7 @@ export function CatalogPage() {
               <p className="product-slider__empty">No hay productos recientes.</p>
             ) : (
               recentProducts.map((p) => (
-                <article key={p.id} className="card catalog-card product-slider__card">
+                <article key={p.id} className="card catalog-card product-slider__card" onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ["product", p.id], queryFn: () => api(`/products/${p.id}`), staleTime: 5 * 60 * 1000 })}>
                   {(p.imageUrl || p.imageUrls?.[0]) && (
                     <Link to={productDetailPath(p)}>
                       <img src={p.imageUrl || p.imageUrls?.[0]} alt={p.name} className="catalog-image" loading="lazy" />

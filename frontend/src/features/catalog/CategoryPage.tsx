@@ -2,11 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../app/api";
 import { productDetailPath } from "../../app/slug";
-import {
-  fetchPublicCategories,
-  getCachedPublicCategories,
-  type PublicCategory
-} from "../../app/publicCategories";
+import type { PublicCategory } from "../../app/publicCategories";
+import { usePublicCategories, useCategoryProducts, queryClient } from "../../app/queries";
 
 type Product = {
   id: string;
@@ -30,16 +27,13 @@ export function CategoryPage() {
   const topRef = useRef<HTMLDivElement>(null);
   const prevPageRef = useRef(1);
   const { categorySlug } = useParams();
-  const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
-  const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [categoriesLoading, setCategoriesLoading] = useState(!getCachedPublicCategories());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const pageSize = 12;
+
+  const { data: categoriesData, isLoading: categoriesLoading } = usePublicCategories();
+  const categories: PublicCategory[] = categoriesData ?? [];
 
   const flattenCategories = (nodes: PublicCategory[]): PublicCategory[] =>
     nodes.flatMap((node) => [node, ...flattenCategories(node.children)]);
@@ -54,64 +48,21 @@ export function CategoryPage() {
   };
 
   const currentCategory = useMemo(() => (categorySlug ? findCategoryBySlug(categories, categorySlug) : undefined), [categories, categorySlug]);
+
+  const descendantNames = useMemo(
+    () => currentCategory ? flattenCategories([currentCategory]).map((c) => c.name) : [],
+    [currentCategory]
+  );
+
+  const { data: productsData, isFetching: loading, isError } = useCategoryProducts(descendantNames, page, sortBy);
+  const products = productsData?.data ?? [];
+  const total = productsData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   useEffect(() => {
-    const cached = getCachedPublicCategories();
-    if (cached) {
-      setCategories(cached);
-      setCategoriesLoading(false);
-      return;
-    }
-
-    setCategoriesLoading(true);
-    fetchPublicCategories(api)
-      .then((res) => setCategories(res))
-      .catch(() => setCategories([]))
-      .finally(() => setCategoriesLoading(false));
-  }, []);
-
-  useEffect(() => {
     setPage(1);
   }, [currentCategory?.id, sortBy]);
-
-  useEffect(() => {
-    async function loadCategoryProducts() {
-      if (!currentCategory) {
-        setProducts([]);
-        setTotal(0);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError("");
-      try {
-        const descendants = flattenCategories([currentCategory]).map((category) => category.name);
-        const categoryQuery =
-          descendants.length > 1
-            ? `categories=${encodeURIComponent(descendants.join(","))}`
-            : `category=${encodeURIComponent(currentCategory.name)}`;
-        const res = await api<ProductsResponse>(
-          `/products?${categoryQuery}&sortBy=${encodeURIComponent(sortBy)}&page=${page}&pageSize=${pageSize}`
-        );
-        setProducts(res.data);
-        setTotal(res.total);
-      } catch (err) {
-        setProducts([]);
-        setTotal(0);
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadCategoryProducts().catch((err) => {
-      setLoading(false);
-      setError((err as Error).message);
-    });
-  }, [currentCategory, page, sortBy]);
 
   useEffect(() => {
     if (!loading && page !== prevPageRef.current) {
@@ -196,12 +147,12 @@ export function CategoryPage() {
       </div>
 
       {loading && <p>Cargando productos...</p>}
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
+      {isError && <p style={{ color: "crimson" }}>No se pudieron cargar los productos.</p>}
 
       <div className={`category-products category-products--${viewMode}`}>
       <div className="grid category-products-grid" style={{ marginTop: 12 }}>
         {products.map((product) => (
-          <article key={product.id} className="card catalog-card">
+          <article key={product.id} className="card catalog-card" onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ["product", product.id], queryFn: () => api(`/products/${product.id}`), staleTime: 5 * 60 * 1000 })}>
             {(product.imageUrl || product.imageUrls?.[0]) && (
               <Link to={productDetailPath(product)}>
                 <img src={product.imageUrl || product.imageUrls?.[0]} alt={product.name} className="catalog-image" loading="lazy" />

@@ -1,8 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { api } from "../../app/api";
 import { useCartStore } from "../cart/cart.store";
 import { slugify } from "../../app/slug";
+import { useProduct } from "../../app/queries";
 
 type ProductDetail = {
   id: string;
@@ -30,10 +30,7 @@ export function ProductDetailPage() {
   const { productSlug, productId: productIdParam } = useParams();
   const addItem = useCartStore((s) => s.addItem);
   const openDrawer = useCartStore((s) => s.openDrawer);
-  const [product, setProduct] = useState<ProductDetail | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -44,14 +41,6 @@ export function ProductDetailPage() {
     deltaX: 0
   });
 
-  const galleryImages = Array.from(
-    new Set(
-      [product?.imageUrl ?? "", ...((product?.imageUrls ?? []).map((value) => String(value ?? "").trim()))]
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0)
-    )
-  );
-
   const resolvedProductId =
     productIdParam ??
     (() => {
@@ -61,25 +50,15 @@ export function ProductDetailPage() {
       return maybeId && maybeId.length > 8 ? maybeId : null;
     })();
 
-  useEffect(() => {
-    if (!resolvedProductId) {
-      setError("Producto no encontrado.");
-      setLoading(false);
-      return;
-    }
+  const { data: product, isLoading, isError } = useProduct(resolvedProductId);
 
-    api<ProductDetail>(`/products/${resolvedProductId}`)
-      .then((res) => {
-        setProduct(res);
-        setCurrentIndex(0);
-        setError("");
-      })
-      .catch((err) => {
-        setProduct(null);
-        setError((err as Error).message || "No se pudo cargar el producto.");
-      })
-      .finally(() => setLoading(false));
-  }, [resolvedProductId]);
+  const galleryImages = Array.from(
+    new Set(
+      [product?.imageUrl ?? "", ...((product?.imageUrls ?? []).map((value) => String(value ?? "").trim()))]
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0)
+    )
+  );
 
   useEffect(() => {
     if (currentIndex > galleryImages.length - 1) {
@@ -103,15 +82,15 @@ export function ProductDetailPage() {
     return () => document.removeEventListener("keydown", onKey);
   }, [lightboxOpen]);
 
-  if (loading) {
-    return <p>Cargando producto...</p>;
+  if (isLoading) {
+    return <div className="card product-skeleton" style={{ margin: "2rem auto", maxWidth: 800, minHeight: 400 }} />;
   }
 
-  if (error || !product) {
+  if (isError || !product) {
     return (
       <section>
         <h1>Producto no disponible</h1>
-        <p style={{ color: "crimson" }}>{error || "No se encontro el producto."}</p>
+        <p style={{ color: "crimson" }}>{isError ? "No se pudo cargar el producto." : "No se encontro el producto."}</p>
         <Link to="/">Volver al catálogo</Link>
       </section>
     );

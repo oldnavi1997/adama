@@ -9,7 +9,7 @@ import { api } from "./api";
 import { productDetailPath } from "./slug";
 import { Footer } from "./Footer";
 import { Header, type PublicCategory } from "./Header";
-import { fetchPublicCategories, getCachedPublicCategories } from "./publicCategories";
+import { usePublicCategories, queryClient } from "./queries";
 
 type SearchProduct = {
   id: string;
@@ -83,7 +83,8 @@ function MobileCategoryItem({
 }
 
 function Layout() {
-  const [categories, setCategories] = useState<PublicCategory[]>(getCachedPublicCategories() ?? []);
+  const { data: categoriesData } = usePublicCategories();
+  const categories: PublicCategory[] = categoriesData ?? [];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,12 +104,6 @@ function Layout() {
     setSearchQuery("");
     setSearchResults([]);
     setSearchHasSearched(false);
-  }, []);
-
-  useEffect(() => {
-    fetchPublicCategories(api)
-      .then((res) => setCategories(res))
-      .catch(() => setCategories([]));
   }, []);
 
   useEffect(() => {
@@ -368,7 +363,7 @@ function Layout() {
               <div className="search-drawer-status">No se encontraron productos</div>
             ) : (
               searchResults.map((p) => (
-                <button key={p.id} type="button" className="search-result-item" onClick={() => handleSearchResultClick(p)}>
+                <button key={p.id} type="button" className="search-result-item" onClick={() => handleSearchResultClick(p)} onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ["product", p.id], queryFn: () => api(`/products/${p.id}`), staleTime: 5 * 60 * 1000 })}>
                   {p.imageUrl ? (
                     <img src={p.imageUrl} alt={p.name} className="search-result-thumb" loading="lazy" />
                   ) : (
