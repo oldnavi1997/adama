@@ -621,10 +621,7 @@ export function CheckoutPage() {
                     {paymentMethod === "yape" && (
                       <div className="yape-card">
                         <div className="yape-header">
-                          <svg className="yape-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="32" height="32" rx="8" fill="#742284"/>
-                            <text x="16" y="22" textAnchor="middle" fill="#fff" fontSize="16" fontWeight="700">Y</text>
-                          </svg>
+                          <img src="https://res.cloudinary.com/dzqns7kss/image/upload/v1772670756/Yape-App-Logo-Vector.svg-_g36q5h.png" alt="Yape" className="yape-logo" width="32" height="32" />
                           <div>
                             <strong className="yape-title">Paga con Yape en pocos segundos</strong>
                             <p className="yape-subtitle">Completa los siguientes datos y confirma tu compra.</p>
