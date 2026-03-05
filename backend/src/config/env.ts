@@ -29,9 +29,6 @@ export const env = {
   cloudinaryFolder: process.env.CLOUDINARY_FOLDER ?? "adama/products",
   skipPayment: process.env.SKIP_PAYMENT === "true",
   emailEnabled: process.env.EMAIL_ENABLED === "true",
-  smtpHost: process.env.SMTP_HOST ?? "",
-  smtpPort: Number(process.env.SMTP_PORT ?? 587),
-  smtpUser: process.env.SMTP_USER ?? "",
-  smtpPass: process.env.SMTP_PASS ?? "",
-  smtpFrom: process.env.SMTP_FROM ?? "Adamantio <noreply@adamantio.com>"
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailFrom: process.env.EMAIL_FROM ?? "Adamantio <onboarding@resend.dev>"
 };

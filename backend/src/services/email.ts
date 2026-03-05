@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { render } from "@react-email/render";
 import * as React from "react";
 import type { Decimal } from "@prisma/client/runtime/library";
@@ -37,27 +37,15 @@ interface OrderForEmail {
   guestEmail?: string | null;
 }
 
-function createTransporter() {
-  return nodemailer.createTransport({
-    host: env.smtpHost,
-    port: env.smtpPort,
-    secure: env.smtpPort === 465,
-    auth: {
-      user: env.smtpUser,
-      pass: env.smtpPass
-    }
-  });
-}
-
 export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<void> {
   if (!env.emailEnabled) {
     // eslint-disable-next-line no-console
     console.log("[EMAIL] disabled (EMAIL_ENABLED != 'true') — skipping for order", order.id);
     return;
   }
-  if (!env.smtpHost || !env.smtpUser || !env.smtpPass) {
+  if (!env.resendApiKey) {
     // eslint-disable-next-line no-console
-    console.warn("[EMAIL] SMTP not configured — skipping order confirmation email");
+    console.warn("[EMAIL] RESEND_API_KEY not configured — skipping order confirmation email");
     return;
   }
 
@@ -86,15 +74,20 @@ export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<
 
   try {
     const html = await render(React.createElement(OrderConfirmationEmail, templateData));
-    const transporter = createTransporter();
-    await transporter.sendMail({
-      from: env.smtpFrom,
+    const resend = new Resend(env.resendApiKey);
+    const { error } = await resend.emails.send({
+      from: env.emailFrom,
       to: toEmail,
       subject: `¡Pedido confirmado! #${shortId}`,
       html
     });
-    // eslint-disable-next-line no-console
-    console.log("[EMAIL] Order confirmation sent to", toEmail, "for order", order.id);
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.error("[EMAIL] Resend error:", error);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("[EMAIL] Order confirmation sent to", toEmail, "for order", order.id);
+    }
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("[EMAIL] Failed to send order confirmation:", error);
