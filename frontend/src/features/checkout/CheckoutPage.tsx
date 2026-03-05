@@ -603,8 +603,7 @@ export function CheckoutPage() {
                         customization={{
                           paymentMethods: {
                             creditCard: "all",
-                            debitCard: "all",
-                            mercadoPago: "none"
+                            debitCard: "all"
                           }
                         }}
                         onSubmit={async ({ formData }) => {
