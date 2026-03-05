@@ -102,7 +102,7 @@ export function CatalogPage() {
           <p className="home-hero-subtitle">
             Anillos con mensajes ocultos que brillan a la luz.
           </p>
-          <Link to="/producto/proyeccion-de-amor-anillo-de-plata-925-con-mensaje-oculto-para-ella-y-el-cmlyd257v002mibs03iig5yl3" className="home-hero-cta">
+          <Link to="/producto/proyeccion-de-amor-anillo-de-plata-925-con-mensaje-oculto-para-ella-y-el-cmlyj70pl002omi0pfm883h3k" className="home-hero-cta">
             DESCUBRE LA MAGIA
           </Link>
         </div>
@@ -115,7 +115,7 @@ export function CatalogPage() {
         <p className="home-intro-subtitle">
           Piezas en plata 925 que guardan un secreto solo para ustedes dos. Regalos con significado que cuentan vuestra historia.
         </p>
-        <Link to="#productos" className="home-intro-cta">
+        <Link to="/categoria/anillos-de-parejas" className="home-intro-cta">
           Mira la colección
         </Link>
       </section>
