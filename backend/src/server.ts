@@ -4,6 +4,7 @@ import helmet from "helmet";
 import compression from "compression";
 import { env } from "./config/env.js";
 import { apiRouter } from "./routes/index.js";
+import { ogRouter } from "./modules/og/og.routes.js";
 import { errorHandler } from "./middleware/error.js";
 import { renderBackendHome } from "./ui/backend-home.js";
 import { connectRedis } from "./lib/redis.js";
@@ -48,6 +49,7 @@ app.get("/", (_req, res) => {
   );
 });
 
+app.use("/og", ogRouter);
 app.use("/api", apiRouter);
 app.use(errorHandler);
 
