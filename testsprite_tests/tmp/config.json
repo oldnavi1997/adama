@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:4173",
+  "executionArgs": {
+    "projectName": "ecommerce-f",
+    "projectPath": "D:\\Cursor\\ecommerce-f",
+    "testIds": [],
+    "additionalInstruction": "",
+    "serverMode": "production",
+    "envs": {
+      "API_KEY": "sk-user-GOyBQ10kKlGuUglHeOqe1aizT9d4Xl3Gf0v63N-RyqN6KkQSFcmLaTVbGMj3xq_uxutK16_rH2UX35rvadk1UUhEw_mHM07Y2YdRgrwMLR6YjNE2fRm50OfFOmiVOMMufsA"
+    }
+  },
+  "serverPort": 53171,
+  "proxy": "http://2bdae43a-bbd7-4fee-9220-e842a4f72f25:E27H0jULUnvtomp02cBKUnsB7bM5JERY@tun.testsprite.com:8080"
+}

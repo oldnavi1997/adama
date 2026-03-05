@@ -1,0 +1,215 @@
+version: "2"
+type: frontend
+tech_stack:
+  - language: TypeScript
+  - framework: React 18 + React Router v6
+  - ui_library: Custom CSS (no framework)
+  - other: Zustand, Vite, Mercado Pago SDK, keepalive-for-react
+
+routes:
+  - path: /
+    file: src/features/catalog/CatalogPage.tsx
+    auth_required: false
+    description: Home page with featured categories and recently added products slider
+  - path: /products/:productId
+    file: src/features/catalog/ProductDetailPage.tsx
+    auth_required: false
+    description: Product detail page by numeric ID
+  - path: /producto/:productSlug
+    file: src/features/catalog/ProductDetailPage.tsx
+    auth_required: false
+    description: Product detail page by slug (SEO-friendly URL)
+  - path: /categoria/:categorySlug
+    file: src/features/catalog/CategoryPage.tsx
+    auth_required: false
+    description: Category page with product listing, sorting, and pagination
+  - path: /cart
+    file: src/features/cart/CartPage.tsx
+    auth_required: false
+    description: Shopping cart with quantity controls and checkout link
+  - path: /checkout
+    file: src/features/checkout/CheckoutPage.tsx
+    auth_required: false
+    description: Checkout form with address, shipping, and payment
+  - path: /checkout/success
+    file: src/features/checkout/CheckoutSuccessPage.tsx
+    auth_required: false
+    description: Order confirmation with payment status and order summary
+  - path: /checkout/failure
+    file: src/features/checkout/CheckoutFailurePage.tsx
+    auth_required: false
+    description: Payment failure notification
+  - path: /checkout/pending
+    file: src/features/checkout/CheckoutPendingPage.tsx
+    auth_required: false
+    description: Payment pending status page
+  - path: /terminos-de-servicio
+    file: src/app/legal/TerminosDeServicioPage.tsx
+    auth_required: false
+    description: Terms of service page
+  - path: /politica-de-reembolsos
+    file: src/app/legal/PoliticaReembolsosPage.tsx
+    auth_required: false
+    description: Refund policy page
+  - path: /politica-de-privacidad
+    file: src/app/legal/PoliticaPrivacidadPage.tsx
+    auth_required: false
+    description: Privacy policy page
+  - path: /libro-de-reclamaciones
+    file: src/app/legal/LibroReclamacionesPage.tsx
+    auth_required: false
+    description: Complaints book page
+
+features:
+  - name: Catalog / Home Page
+    description: Displays featured categories and a recently added products slider on the home page
+    files:
+      - src/features/catalog/CatalogPage.tsx
+      - src/app/publicCategories.ts
+    entry_route: /
+    user_interactions:
+      - View featured category cards with CTA links
+      - Browse recently added products in horizontal slider
+      - Click Previous/Next buttons to scroll slider
+      - Click on a product card to navigate to product detail
+      - Click on a category card to navigate to category page
+    api_calls:
+      - method: GET
+        endpoint: /api/products
+      - method: GET
+        endpoint: /api/products/categories/public
+    auth_required: false
+
+  - name: Product Search
+    description: Real-time product search via drawer in header with accent-insensitive results
+    files:
+      - src/app/Header.tsx
+    entry_route: /
+    user_interactions:
+      - Click search icon in header to open search drawer
+      - Type at least 2 characters in search input
+      - View search results with image, name, category, and price
+      - Click on a result to navigate to product detail page
+      - Click X or press Escape to close drawer
+    api_calls:
+      - method: GET
+        endpoint: /api/products?search={query}&pageSize=12
+    auth_required: false
+
+  - name: Category Browsing
+    description: Browse products filtered by category with sorting and pagination
+    files:
+      - src/features/catalog/CategoryPage.tsx
+    entry_route: /categoria/:categorySlug
+    user_interactions:
+      - Select sort option (latest, price asc/desc, name asc/desc)
+      - Toggle between grid and list view
+      - Click pagination page numbers
+      - Click on a product card to view detail
+    api_calls:
+      - method: GET
+        endpoint: /api/products/categories/public
+      - method: GET
+        endpoint: /api/products?category=X&sortBy=Y&page=Z&pageSize=12
+    auth_required: false
+
+  - name: Product Detail
+    description: View product images, description, size info, and add to cart
+    files:
+      - src/features/catalog/ProductDetailPage.tsx
+    entry_route: /producto/:productSlug
+    user_interactions:
+      - View product image gallery (swipe or click thumbnails)
+      - Click Previous/Next buttons for gallery navigation
+      - Click image to open lightbox full-screen view
+      - Click "Agregar al carrito" button to add product to cart
+      - Toggle collapsible sections (Detalles, Talla, Envio, Grabado)
+      - View breadcrumb navigation and click category link
+    api_calls:
+      - method: GET
+        endpoint: /api/products/:productId
+    auth_required: false
+
+  - name: Shopping Cart
+    description: View and manage cart items with quantity controls before checkout
+    files:
+      - src/features/cart/CartPage.tsx
+      - src/features/cart/cart.store.ts
+    entry_route: /cart
+    user_interactions:
+      - View all cart items with image, name, price, quantity, and line total
+      - Increment or decrement quantity using +/- buttons
+      - Type quantity directly in input field
+      - Click remove button to delete an item from cart
+      - View subtotal and total price
+      - View free shipping banner when total is below S/ 299
+      - Click "Continuar con la compra" button to go to checkout
+    api_calls: []
+    auth_required: false
+
+  - name: Checkout
+    description: Complete purchase with personal info, shipping address, and payment
+    files:
+      - src/features/checkout/CheckoutPage.tsx
+      - src/features/checkout/peru-ubigeo.json
+    entry_route: /checkout
+    user_interactions:
+      - Fill in email, first name, last name fields
+      - Select document type (DNI or Carnet de Extranjeria)
+      - Fill in document number and phone
+      - Fill in street address
+      - Select department from dropdown (24 Peruvian departments)
+      - Select province (cascading from department)
+      - Select district (cascading from province)
+      - Select shipping method (Shalom or Olva Courier)
+      - Select payment method tab (Card or Yape)
+      - For card: complete Mercado Pago Payment Brick fields
+      - For Yape: enter phone number and OTP code
+      - Click "Confirmar pedido" button to submit
+    api_calls:
+      - method: POST
+        endpoint: /api/orders
+      - method: POST
+        endpoint: /api/payments/process
+    auth_required: false
+
+  - name: Order Confirmation
+    description: Display order summary and payment status after successful checkout
+    files:
+      - src/features/checkout/CheckoutSuccessPage.tsx
+    entry_route: /checkout/success
+    user_interactions:
+      - View order ID, creation date, customer name, and email
+      - View shipping address
+      - View ordered products with images, quantities, and prices
+      - View subtotal, shipping cost breakdown
+      - View payment status history
+    api_calls:
+      - method: GET
+        endpoint: /api/orders/:orderId/confirmation
+    auth_required: false
+
+  - name: Legal Pages
+    description: Static informational pages for terms, refund policy, privacy, and complaints
+    files:
+      - src/app/legal/TerminosDeServicioPage.tsx
+      - src/app/legal/PoliticaReembolsosPage.tsx
+      - src/app/legal/PoliticaPrivacidadPage.tsx
+      - src/app/legal/LibroReclamacionesPage.tsx
+    entry_route: /terminos-de-servicio
+    user_interactions:
+      - Navigate to legal page from footer links
+      - Read static content
+    api_calls: []
+    auth_required: false
+
+known_limitations:
+  - issue: Payment requires real Mercado Pago credentials; Yape OTP cannot be automated
+    location: src/features/checkout/CheckoutPage.tsx
+    impact: Full payment flow cannot be tested end-to-end without real payment credentials
+  - issue: VITE_SKIP_PAYMENT env var can bypass payment for dev testing
+    location: src/features/checkout/CheckoutPage.tsx
+    impact: Order creation can be tested without payment in dev mode
+  - issue: Cart state is persisted only in localStorage (no backend sync)
+    location: src/features/cart/cart.store.ts
+    impact: Cart is lost if localStorage is cleared; no cross-device sync

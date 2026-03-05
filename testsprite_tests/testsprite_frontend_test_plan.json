@@ -1,0 +1,1803 @@
+[
+  {
+    "id": "TC001",
+    "title": "Home page loads featured categories and recently added products slider",
+    "description": "Verifies the home page renders the featured category section and the recently added products slider.",
+    "category": "Catalog / Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Adamantio\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Categorías\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Featured category cards section\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Recientemente\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Recently added products slider\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Navigate from home slider product card to product detail page",
+    "description": "Verifies clicking a product card in the home slider opens the product detail page.",
+    "category": "Catalog / Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Recently added products slider\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first visible product card in the recently added products slider"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/producto/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product detail main section\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Add to cart\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Scroll home slider using Next and Previous controls",
+    "description": "Verifies the slider navigation controls are usable and the slider updates content.",
+    "category": "Catalog / Home Page",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Recently added products slider\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Slider Next button\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Next\" in the recently added products slider"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A different product card in the slider\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Previous\" in the recently added products slider"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A product card in the slider\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Navigate from featured category card to category listing page",
+    "description": "Verifies clicking a featured category card navigates to a category page and shows a product listing.",
+    "category": "Catalog / Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Featured category cards section\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first featured category card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/categoria/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Category page product listing\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Sorting control\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Featured category card CTA link navigates to the same category page",
+    "description": "Verifies the category card call-to-action link works and reaches the category listing page.",
+    "category": "Catalog / Home Page",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Featured category cards section\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Ver productos\" (or equivalent) CTA link within the first featured category card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/categoria/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Category page header\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Category page product listing\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Category page empty state shows 'No products found' after navigating from home",
+    "description": "Verifies that when a selected category has no products, the empty state message is displayed.",
+    "category": "Catalog / Home Page",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Featured category cards section\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on a featured category card that is expected to have no products"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/categoria/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No products found\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Category page product listing\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Search drawer returns results and navigates to product detail from a result",
+    "description": "Verifies that searching with 2+ characters shows rich results and clicking a result opens the product detail page.",
+    "category": "Product Search (header drawer)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on the search icon in the header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search drawer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ca\" into the search input field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first product result"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/producto/\""
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Search results show image, name, category, and price for an item",
+    "description": "Verifies each search result presents the expected visible fields (image, name, category, price).",
+    "category": "Product Search (header drawer)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on the search icon in the header"
+      },
+      {
+        "type": "action",
+        "description": "Type \"ca\" into the search input field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A product result image\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A product result name\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A product result category\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A product result price\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Typing only 1 character shows the minimum-characters hint",
+    "description": "Verifies that the drawer prompts the user to type at least 2 characters when only 1 is entered.",
+    "category": "Product Search (header drawer)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on the search icon in the header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search drawer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"a\" into the search input field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Escribe al menos 2 caracteres\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"X\" close button in the search drawer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search drawer\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Closing the search drawer via X hides the drawer UI",
+    "description": "Verifies the drawer can be dismissed using the close control.",
+    "category": "Product Search (header drawer)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on the search icon in the header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search drawer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"X\" close button in the search drawer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search drawer\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Accent-insensitive search returns results for unaccented query",
+    "description": "Verifies that searching without accents still returns results that may contain accented characters in names/categories.",
+    "category": "Product Search (header drawer)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on the search icon in the header"
+      },
+      {
+        "type": "action",
+        "description": "Type \"cafe\" into the search input field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"At least one product result\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first product result"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/producto/\""
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "No-results state is shown for a query with no matches",
+    "description": "Verifies that an informative empty state is displayed when no products match the query.",
+    "category": "Product Search (header drawer)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on the search icon in the header"
+      },
+      {
+        "type": "action",
+        "description": "Type \"zzqqlm\" into the search input field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"No results state\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Category page shows product list for a category",
+    "description": "Verifies that a category page loads and displays a visible list of products for the selected category.",
+    "category": "Category Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/categoria/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pagination\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Sorting products by Latest updates the category listing",
+    "description": "Verifies that selecting the \"Latest\" sort option changes the visible ordering/contents of the category product list.",
+    "category": "Category Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/categoria/\""
+      },
+      {
+        "type": "action",
+        "description": "Select \"Latest\" from the sort dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Latest\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Sorting products by Price (Low to High) keeps results visible",
+    "description": "Verifies that changing sort to price ascending works without breaking the listing and keeps products visible.",
+    "category": "Category Browsing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Price: Low to High\" from the sort dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Price: Low to High\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pagination\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Toggle between Grid view and List view on category page",
+    "description": "Verifies that the user can switch between grid and list layouts and the layout change is visible.",
+    "category": "Category Browsing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Grid view\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"List\" view toggle"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"List view\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Grid\" view toggle"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Grid view\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Pagination: navigate from page 1 to page 2 within a category",
+    "description": "Verifies that clicking a pagination page number loads a different page of results for the same category.",
+    "category": "Category Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pagination\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click pagination page number \"2\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"page=2\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Pagination persists after changing sort option",
+    "description": "Verifies that after navigating to another page, changing sort keeps the user on a valid results page and shows products.",
+    "category": "Category Browsing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "action",
+        "description": "Click pagination page number \"2\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"page=2\""
+      },
+      {
+        "type": "action",
+        "description": "Select \"Name: A to Z\" from the sort dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pagination\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Open a product detail page from a category product card",
+    "description": "Verifies that clicking a product card in a category navigates to the product detail page and loads product details.",
+    "category": "Category Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first visible product card in the product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/producto/\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product detail\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Out-of-range pagination shows empty message or redirects to last page",
+    "description": "Verifies that selecting a pagination page beyond the available range results in a visible no-results message or redirection to the last available page with products.",
+    "category": "Category Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible category link from the home page (for example, a featured category)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pagination\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click pagination page number \"999\" (or the highest available page number if shown)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No products\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pagination\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Product detail page: view gallery and open lightbox",
+    "description": "Verifies a shopper can view the product image gallery and open a full-screen lightbox from the product detail page.",
+    "category": "Product Detail",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product detail page main product image\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on a thumbnail image in the product image gallery"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Selected gallery image\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the main product image"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Lightbox full-screen image viewer\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Product detail page: navigate gallery using Previous/Next controls",
+    "description": "Verifies a shopper can move through product images using the gallery Previous/Next controls.",
+    "category": "Product Detail",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product image gallery\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Next\" button in the product image gallery"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Selected gallery image\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Previous\" button in the product image gallery"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Selected gallery image\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Product detail page: toggle collapsible informational sections",
+    "description": "Verifies a shopper can expand and collapse the informational sections (Detalles, Talla, Envío, Grabado).",
+    "category": "Product Detail",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Detalles\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Detalles\" section header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Detalles section content\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Talla\" section header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Talla section content\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Product detail page: add in-stock product to cart and see success feedback",
+    "description": "Verifies that adding an in-stock product shows visual confirmation that it was added to the cart.",
+    "category": "Product Detail",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Agregar al carrito\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Agregar al carrito\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Agregado al carrito\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the cart icon/link in the site header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/cart\""
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Product detail page: out-of-stock product shows 'Sin stock' and blocks add-to-cart",
+    "description": "Verifies that an out-of-stock product displays the 'Sin stock' state and prevents adding to cart with appropriate UI feedback.",
+    "category": "Product Detail",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list that is labeled as out of stock"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Sin stock\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Agregar al carrito (disabled)\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Agregar al carrito\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Sin stock\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Product detail page: breadcrumb category link navigates to a category page",
+    "description": "Verifies breadcrumb navigation is visible and the category link takes the shopper to a category listing page.",
+    "category": "Product Detail",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Breadcrumb navigation\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the category link in the breadcrumb navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Ordenar\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product listing\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Product detail page: collapsible 'Grabado' section is accessible before adding to cart",
+    "description": "Verifies the 'Grabado' informational section can be expanded and its content is visible to the shopper.",
+    "category": "Product Detail",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Grabado\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Grabado\" section header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Grabado section content\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Grabado\" section header"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Grabado section content\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Product detail page: lightbox can be dismissed",
+    "description": "Verifies the shopper can close the full-screen image lightbox and return to the product detail page view.",
+    "category": "Product Detail",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click on a product card from the homepage product list"
+      },
+      {
+        "type": "action",
+        "description": "Click on the main product image"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Lightbox full-screen image viewer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Press Escape"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Lightbox full-screen image viewer\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Product detail page main product image\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Proceed from Cart to Checkout after updating quantities",
+    "description": "Verifies a shopper can adjust item quantity in the cart and proceed to checkout with updated totals shown.",
+    "category": "Shopping Cart",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Carrito\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Continuar con la compra\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"+\" (increase quantity) button for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subtotal\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the quantity input for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"2\" into the quantity input for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Continuar con la compra\""
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Cart shows all required item details and totals summary",
+    "description": "Verifies cart items display key details (image, name, price, quantity, line total) and a totals section is visible.",
+    "category": "Shopping Cart",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subtotal\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Total\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"quantity\" input is visible for a cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"remove\" button is visible for a cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Continuar con la compra\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Directly typing quantity updates totals",
+    "description": "Verifies the shopper can type a valid quantity and the cart totals section remains visible after the update.",
+    "category": "Shopping Cart",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"quantity\" input is visible for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the quantity input for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"3\" into the quantity input for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subtotal\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Total\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Invalid quantity of 0 is rejected with inline validation",
+    "description": "Verifies entering quantity 0 is restricted to 1–10 and an inline validation message is shown.",
+    "category": "Shopping Cart",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"quantity\" input is visible for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the quantity input for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"0\" into the quantity input for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"1\" is visible in the quantity control for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"1–10\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Invalid quantity greater than 10 is rejected with inline validation",
+    "description": "Verifies entering quantity above 10 is restricted to 1–10 and an inline validation message is shown.",
+    "category": "Shopping Cart",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"quantity\" input is visible for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Click on the quantity input for the first cart item"
+      },
+      {
+        "type": "action",
+        "description": "Type \"11\" into the quantity input for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"10\" is visible in the quantity control for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"1–10\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Remove an item from cart updates the cart contents and totals",
+    "description": "Verifies a shopper can remove an item and the cart updates accordingly.",
+    "category": "Shopping Cart",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subtotal\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the remove button for the first cart item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subtotal\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Total\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Continuar con la compra\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "Free shipping banner displays when total is below S/ 299",
+    "description": "Verifies the cart shows a free shipping banner when the total is below the threshold.",
+    "category": "Shopping Cart",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"S/ 299\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"envío\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Subtotal\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Total\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC036",
+    "title": "Checkout CTA routes to the Checkout page from the Cart",
+    "description": "Verifies clicking the checkout call-to-action from the cart takes the shopper to the checkout route.",
+    "category": "Shopping Cart",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /cart"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Continuar con la compra\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Continuar con la compra\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/checkout\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Checkout\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC037",
+    "title": "Checkout page loads and shows key sections (contact, shipping, payment)",
+    "description": "Verifies the checkout page can be opened and the main form sections are visible before user input.",
+    "category": "Checkout",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Checkout\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Email\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Dirección\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Envío\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pago\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Confirmar pedido\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC038",
+    "title": "Inline validation shows required field errors when submitting empty checkout form",
+    "description": "Ensures required field validations are displayed when submitting without completing mandatory fields.",
+    "category": "Checkout",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Confirmar pedido\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Email\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Documento\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"inválido\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/checkout\""
+      }
+    ]
+  },
+  {
+    "id": "TC039",
+    "title": "Correct validation errors then re-submit (email required + invalid document)",
+    "description": "Verifies users can fix invalid inputs after seeing validation errors and proceed past client-side validation.",
+    "category": "Checkout",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Confirmar pedido\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Email\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"qa.user@example.com\" into the Email field"
+      },
+      {
+        "type": "action",
+        "description": "Select \"DNI\" from the document type dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Type \"123\" into the document number field"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Confirmar pedido\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Documento\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC040",
+    "title": "Ubigeo cascade: selecting Department enables Province selection",
+    "description": "Verifies the Peru ubigeo cascade progresses from department to province selection.",
+    "category": "Checkout",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the address section"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Lima\" from the Department dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Province\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the Province dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Lima\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC041",
+    "title": "Ubigeo cascade: selecting Province enables District selection",
+    "description": "Verifies the ubigeo cascade progresses from province to district selection after selecting a department.",
+    "category": "Checkout",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the address section"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Lima\" from the Department dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Lima\" from the Province dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"District\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the District dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Miraflores\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC042",
+    "title": "Shipping method selection toggles between Shalom and Olva Courier",
+    "description": "Ensures users can change shipping method selection and see the chosen option reflected in the UI.",
+    "category": "Checkout",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the shipping section"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Shalom\" shipping option"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Shalom\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Olva Courier\" shipping option"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Olva Courier\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC043",
+    "title": "Switch payment method tabs between Card and Yape",
+    "description": "Verifies users can switch payment method tabs and see the corresponding payment UI.",
+    "category": "Checkout",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the payment section"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Card\" payment tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mercado Pago\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Yape\" payment tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Yape\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC044",
+    "title": "Submit checkout with Card method shows payment brick and stays on checkout if payment cannot complete",
+    "description": "Verifies the Card tab displays Mercado Pago payment brick fields and that submission does not navigate to success without completing payment details.",
+    "category": "Checkout",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the payment section"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Card\" payment tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mercado Pago\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Confirmar pedido\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click \"Confirmar pedido\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/checkout\""
+      }
+    ]
+  },
+  {
+    "id": "TC045",
+    "title": "Checkout Failure page renders payment failure messaging and next steps",
+    "description": "Verifies the failure page clearly indicates payment failure and provides user guidance.",
+    "category": "Order Confirmation (Checkout Success / Failure / Pending)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout/failure"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/checkout/failure\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pago\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"fall\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Failure status message\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call to action to try again or return\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC046",
+    "title": "Checkout Pending page renders payment pending messaging",
+    "description": "Verifies the pending page indicates payment is pending and user should wait or check later.",
+    "category": "Order Confirmation (Checkout Success / Failure / Pending)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /checkout/pending"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/checkout/pending\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Pago\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"pend\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Pending status message\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Instructions for next steps\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC047",
+    "title": "Open Terms of Service page and verify core content renders",
+    "description": "Verifies the Terms of Service legal page loads and shows expected static content to the user.",
+    "category": "Legal Pages",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /terminos-de-servicio"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Términos\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Términos\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC048",
+    "title": "Navigate from Terms of Service to Privacy Policy using footer link",
+    "description": "Verifies a user can move between legal pages via footer navigation and the Privacy Policy content renders.",
+    "category": "Legal Pages",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /terminos-de-servicio"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the footer link \"Política de Privacidad\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/politica-de-privacidad\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Privacidad\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Política\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC049",
+    "title": "Open Refund Policy page and verify core content renders",
+    "description": "Verifies the Refund Policy legal page loads and shows expected static content to the user.",
+    "category": "Legal Pages",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /politica-de-reembolsos"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/politica-de-reembolsos\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Reembols\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Política\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC050",
+    "title": "Open Privacy Policy page and verify core content renders",
+    "description": "Verifies the Privacy Policy legal page loads and shows expected static content to the user.",
+    "category": "Legal Pages",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /politica-de-privacidad"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/politica-de-privacidad\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Privacidad\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Privacidad\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC051",
+    "title": "Open Complaints Book page and verify core content renders",
+    "description": "Verifies the Complaints Book legal page loads and displays its informational content.",
+    "category": "Legal Pages",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /libro-de-reclamaciones"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/libro-de-reclamaciones\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Reclam\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Libro\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC052",
+    "title": "Verify footer exposes links to all legal pages from the home page",
+    "description": "Verifies the footer provides access to all legal pages and each destination loads when clicked.",
+    "category": "Legal Pages",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the footer link \"Términos de Servicio\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/terminos-de-servicio\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the footer link \"Política de Reembolsos\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/politica-de-reembolsos\""
+      },
+      {
+        "type": "action",
+        "description": "Click on the footer link \"Libro de Reclamaciones\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/libro-de-reclamaciones\""
+      }
+    ]
+  },
+  {
+    "id": "TC053",
+    "title": "Legal page content remains readable after scrolling",
+    "description": "Verifies long-form legal content can be scrolled and the user still sees page content and footer afterward.",
+    "category": "Legal Pages",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /terminos-de-servicio"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Términos\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the bottom of the page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"footer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the top of the page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Términos\" is visible"
+      }
+    ]
+  }
+]

@@ -58,7 +58,7 @@ export function Header({
         <nav>
           <Link to="/" className="brand-link">
             <img
-              src="https://adamantio.pe/wp-content/uploads/2025/02/adamantio-logo-768x224.png"
+              src="https://res.cloudinary.com/dzqns7kss/image/upload/v1772665459/adamantio-logo-1024x299_ol5fgy.png"
               alt="Adamantio"
               className="brand-logo"
             />

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const LOGO_URL = "https://adamantio.pe/wp-content/uploads/2025/02/adamantio-logo-768x224.png";
+const LOGO_URL = "https://res.cloudinary.com/dzqns7kss/image/upload/v1772665459/adamantio-logo-1024x299_ol5fgy.png";
 
 const LEGAL_LINKS = [
   { to: "/terminos-de-servicio", label: "Términos de servicio" },
