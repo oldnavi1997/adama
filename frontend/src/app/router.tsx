@@ -1,4 +1,4 @@
-import { createBrowserRouter, Link, useLocation, useNavigate } from "react-router-dom";
+import { createBrowserRouter, Link, ScrollRestoration, useLocation, useNavigate } from "react-router-dom";
 import KeepAliveRouteOutlet from "keepalive-for-react-router";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { CatalogPage } from "../features/catalog/CatalogPage";
@@ -165,6 +165,7 @@ function Layout() {
 
   return (
     <div className="layout-wrap">
+      <ScrollRestoration />
       <Header
         categories={categories}
         cartItemsCount={cartItemsCount}
