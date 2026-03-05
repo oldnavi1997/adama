@@ -66,12 +66,11 @@ ${priceTag}
 ogRouter.get("/producto/:slug", async (req, res) => {
   const { slug } = req.params;
   const parts = slug.split("-");
-  const maybeId = parts[parts.length - 1];
-  const productId = parseInt(maybeId, 10);
+  const productId = parts[parts.length - 1];
 
   const productUrl = `${FRONTEND_URL}/producto/${slug}`;
 
-  if (isNaN(productId)) {
+  if (!productId || productId.length < 8) {
     res.type("html").send(
       buildHtml({
         title: DEFAULT_TITLE,
