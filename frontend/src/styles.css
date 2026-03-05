@@ -1639,7 +1639,7 @@ header nav {
   justify-content: flex-end;
   gap: 0;
   padding: 2.5rem 1rem;
-  background-image: url("https://adamantio.pe/wp-content/uploads/2025/02/Hero_Image_Final_resultado-2048x1152-1.webp");
+  background-image: url("https://res.cloudinary.com/dzqns7kss/image/upload/v1772684014/Hero_Image_Final_resultado-2048x1152-1_p9molx.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1706,7 +1706,7 @@ header nav {
     justify-content: center;
     align-items: flex-end;
     background-position: center center;
-    background-image: url("https://adamantio.pe/wp-content/uploads/2025/02/Mobile_Hero_resultado.webp");
+    background-image: url("https://res.cloudinary.com/dzqns7kss/image/upload/v1772684338/Mobile_Hero_resultado_i5xyd5.webp");
   }
   .home-hero-content {
     text-align: center;
