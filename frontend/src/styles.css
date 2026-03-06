@@ -2775,10 +2775,11 @@ main.container {
   border-bottom: 1px solid #e5e7eb;
 }
 
-.product-collapse summary {
+.product-collapse-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: 0.85rem 0;
   cursor: pointer;
   font-weight: 600;
@@ -2786,43 +2787,56 @@ main.container {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #1f2937;
-  list-style: none;
+  background: none;
+  border: none;
+  text-align: left;
   user-select: none;
-}
-
-.product-collapse summary::-webkit-details-marker {
-  display: none;
 }
 
 .product-collapse-chevron {
   width: 18px;
   height: 18px;
   color: #6b7280;
-  transition: transform 0.25s ease;
+  transition: transform 0.32s ease;
   flex-shrink: 0;
 }
 
-.product-collapse[open] .product-collapse-chevron {
+.product-collapse--open .product-collapse-chevron {
   transform: rotate(90deg);
 }
 
 .product-collapse-body {
-  padding: 0 0 0.85rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s ease;
+}
+
+.product-collapse--open .product-collapse-body {
+  grid-template-rows: 1fr;
+}
+
+.product-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.product-collapse-content {
+  padding-bottom: 0.85rem;
   font-size: 0.9rem;
   color: #4b5563;
   line-height: 1.6;
 }
 
-.product-collapse-body ul {
+.product-collapse-content ul {
   margin: 0.25rem 0 0;
   padding-left: 1.2rem;
 }
 
-.product-collapse-body li {
+.product-collapse-content li {
   margin-bottom: 0.3rem;
 }
 
-.product-collapse-body .muted {
+.product-collapse-content .muted {
   margin: 0 0 0.4rem;
 }
 

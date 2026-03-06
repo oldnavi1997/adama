@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import React, { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useCartStore } from "../cart/cart.store";
 import { slugify } from "../../app/slug";
 import { useProduct } from "../../app/queries";
@@ -25,6 +25,28 @@ function CollapseChevron() {
     <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M8 4L16 12L8 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+function Collapse({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`product-collapse${open ? " product-collapse--open" : ""}`}>
+      <button
+        type="button"
+        className="product-collapse-summary"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+      >
+        <span>{title}</span>
+        <CollapseChevron />
+      </button>
+      <div className="product-collapse-body">
+        <div className="product-collapse-inner">
+          <div className="product-collapse-content">{children}</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -251,65 +273,45 @@ export function ProductDetailPage() {
           </button>
 
           <div className="product-collapse-group">
-            {product.productDetails && product.productDetails.trim() !== "" && (
-              <details className="product-collapse">
-                <summary>
-                  <span>Detalles del producto</span>
-                  <CollapseChevron />
-                </summary>
-                <div className="product-collapse-body product-description" dangerouslySetInnerHTML={{ __html: product.productDetails }} />
-              </details>
+            {product.productDetails?.trim() && (
+              <Collapse title="Detalles del producto">
+                <div className="product-description" dangerouslySetInnerHTML={{ __html: product.productDetails }} />
+              </Collapse>
             )}
 
-            {product.sizeInfo && product.sizeInfo.trim() !== "" && (
-              <details className="product-collapse">
-                <summary>
-                  <span>Talla</span>
-                  <CollapseChevron />
-                </summary>
-                <div className="product-collapse-body product-description" dangerouslySetInnerHTML={{ __html: product.sizeInfo }} />
-              </details>
+            {product.sizeInfo?.trim() && (
+              <Collapse title="Talla">
+                <div className="product-description" dangerouslySetInnerHTML={{ __html: product.sizeInfo }} />
+              </Collapse>
             )}
 
-            <details className="product-collapse">
-              <summary>
-                <span>Envío y entrega</span>
-                <CollapseChevron />
-              </summary>
-              <div className="product-collapse-body">
-                <p className="muted">Envíos disponibles por Shalom y Olva Courier.</p>
-                <ul>
-                  <li>Shalom: recojo en agencia, desde S/ 8.</li>
-                  <li>Olva Courier: agencia o delivery, desde S/ 12.</li>
-                  <li>Tiempo estimado: 1 a 3 días hábiles según ciudad.</li>
-                </ul>
-              </div>
-            </details>
+            <Collapse title="Envío y entrega">
+              <p className="muted">Envíos disponibles por Shalom y Olva Courier.</p>
+              <ul>
+                <li>Shalom: recojo en agencia, desde S/ 8.</li>
+                <li>Olva Courier: agencia o delivery, desde S/ 12.</li>
+                <li>Tiempo estimado: 1 a 3 días hábiles según ciudad.</li>
+              </ul>
+            </Collapse>
 
             {product.engravingEnabled && (
-              <details className="product-collapse">
-                <summary>
-                  <span>Grabado (opcional)</span>
-                  <CollapseChevron />
-                </summary>
-                <div className="product-collapse-body">
-                  <EngravingCarousel />
-                  <input
-                    type="text"
-                    className="engraving-input"
-                    value={engravingText}
-                    onChange={(e) => setEngravingText(e.target.value.slice(0, 20))}
-                    maxLength={20}
-                    placeholder="Ej: ANA♡"
-                  />
-                  {engravingText && !ENGRAVING_ALLOWED.test(engravingText) && (
-                    <p className="engraving-warning">Solo se permiten: A-Z 0-9 ♡ † / - • . &amp; + (sin emojis)</p>
-                  )}
-                  <p className="engraving-instructions muted">
-                    El grabado es gratis, va en la parte interna o externa del anillo. Máximo 20 Caracteres (puede variar según el diseño y espacio del anillo, consultar al DM en caso de duda) A-Z 0-9 (Símbolos: ♡ † / - • . &amp; + SOLAMENTE) ¡NO EMOJIS!
-                  </p>
-                </div>
-              </details>
+              <Collapse title="Grabado (opcional)">
+                <EngravingCarousel />
+                <input
+                  type="text"
+                  className="engraving-input"
+                  value={engravingText}
+                  onChange={(e) => setEngravingText(e.target.value.slice(0, 20))}
+                  maxLength={20}
+                  placeholder="Ej: ANA♡"
+                />
+                {engravingText && !ENGRAVING_ALLOWED.test(engravingText) && (
+                  <p className="engraving-warning">Solo se permiten: A-Z 0-9 ♡ † / - • . &amp; + (sin emojis)</p>
+                )}
+                <p className="engraving-instructions muted">
+                  El grabado es gratis, va en la parte interna o externa del anillo. Máximo 20 Caracteres (puede variar según el diseño y espacio del anillo, consultar al DM en caso de duda) A-Z 0-9 (Símbolos: ♡ † / - • . &amp; + SOLAMENTE) ¡NO EMOJIS!
+                </p>
+              </Collapse>
             )}
           </div>
         </div>
