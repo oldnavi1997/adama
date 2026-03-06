@@ -208,9 +208,6 @@ function Layout() {
           </button>
         </div>
         <nav className="mobile-menu-nav" aria-label="Menu lateral movil">
-          <Link to="/cart" className="mobile-menu-link" onClick={() => setIsMobileMenuOpen(false)}>
-            Carrito
-          </Link>
           {categories.length > 0 ? (
             <ul className="mobile-category-list">
               {categories.map((category) => (
