@@ -26,8 +26,7 @@ export function ProductCreatePage() {
     price: 0,
     stock: 0,
     category: "",
-    imageUrl: "",
-    engravingEnabled: false
+    imageUrl: ""
   });
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
 
@@ -198,17 +197,6 @@ export function ProductCreatePage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="admin-field-label">
-              <input
-                type="checkbox"
-                checked={form.engravingEnabled}
-                onChange={(e) => setForm((p) => ({ ...p, engravingEnabled: e.target.checked }))}
-                style={{ marginRight: 6 }}
-              />
-              Grabado habilitado
-            </label>
           </div>
         </div>
         <div className="row" style={{ justifyContent: "flex-end", marginTop: 8 }}>

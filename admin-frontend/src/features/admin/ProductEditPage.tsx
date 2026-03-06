@@ -18,7 +18,6 @@ type Product = {
   productDetails?: string;
   sizeInfo?: string;
   isActive: boolean;
-  engravingEnabled?: boolean;
 };
 
 type SignatureResponse = {
@@ -46,8 +45,7 @@ function productSnapshot(p: Product): string {
     contentImages: p.contentImages ?? [],
     productDetails: p.productDetails ?? "",
     sizeInfo: p.sizeInfo ?? "",
-    isActive: p.isActive,
-    engravingEnabled: p.engravingEnabled ?? false
+    isActive: p.isActive
   });
 }
 
@@ -122,8 +120,7 @@ export function ProductEditPage() {
           contentImages: product.contentImages ?? [],
           productDetails: product.productDetails ?? "",
           sizeInfo: product.sizeInfo ?? "",
-          isActive: product.isActive,
-          engravingEnabled: product.engravingEnabled ?? false
+          isActive: product.isActive
         })
       });
       originalSnapshot.current = productSnapshot(product);
@@ -354,17 +351,6 @@ export function ProductEditPage() {
                 <option key={c.id} value={c.name}>{c.name}</option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="admin-field-label">
-              <input
-                type="checkbox"
-                checked={product.engravingEnabled ?? false}
-                onChange={(e) => setProduct((prev) => prev ? { ...prev, engravingEnabled: e.target.checked } : prev)}
-                style={{ marginRight: 6 }}
-              />
-              Grabado habilitado
-            </label>
           </div>
         </div>
       </section>

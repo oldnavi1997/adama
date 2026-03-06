@@ -390,6 +390,31 @@ productsRouter.delete("/categories/:id", requireAuth, requireRole(UserRole.ADMIN
   res.status(204).send();
 });
 
+productsRouter.patch("/engraving/all", requireAuth, requireRole(UserRole.ADMIN), async (req, res) => {
+  const enabled = Boolean(req.body?.engravingEnabled);
+  const result = await prisma.product.updateMany({ data: { engravingEnabled: enabled } });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
+  res.json({ updated: result.count, engravingEnabled: enabled });
+});
+
+productsRouter.patch("/engraving/bulk", requireAuth, requireRole(UserRole.ADMIN), async (req, res) => {
+  const enabled = Boolean(req.body?.engravingEnabled);
+  const productIds: string[] = Array.isArray(req.body?.productIds) ? req.body.productIds : [];
+  if (productIds.length === 0) { res.status(400).json({ message: "productIds required" }); return; }
+  const result = await prisma.product.updateMany({
+    where: { id: { in: productIds } },
+    data: { engravingEnabled: enabled }
+  });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
+  res.json({ updated: result.count, engravingEnabled: enabled });
+});
+
 productsRouter.get("/:id", async (req, res) => {
   const product = await prisma.product.findUnique({ where: { id: req.params.id } });
   if (!product) {

@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../app/api";
 import { MediaManagerTab } from "./MediaManagerTab";
+import { EngravingTab } from "./EngravingTab";
 
 type Product = {
   id: string;
@@ -58,7 +59,7 @@ type Order = {
   payments: Array<{ id: string; status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"; amount: string }>;
 };
 
-type TabKey = "products" | "categories" | "orders" | "media";
+type TabKey = "products" | "categories" | "orders" | "media" | "engraving";
 
 const STATUS_BADGE: Record<string, string> = {
   PAID: "admin-status-badge--paid",
@@ -288,35 +289,12 @@ export function AdminPage() {
     }
   }
 
-  async function toggleCategoryEngraving(categoryId: string, enabled: boolean) {
-    try {
-      setError("");
-      await api(`/products/categories/${categoryId}/engraving`, {
-        method: "PATCH",
-        auth: true,
-        body: JSON.stringify({ engravingEnabled: enabled })
-      });
-      await loadProducts();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }
-
-  function categoryEngravingState(categoryName: string): boolean | null {
-    const categoryProducts = products.filter((p) => p.category === categoryName);
-    if (categoryProducts.length === 0) return null;
-    const allOn = categoryProducts.every((p) => p.engravingEnabled);
-    const allOff = categoryProducts.every((p) => !p.engravingEnabled);
-    if (allOn) return true;
-    if (allOff) return false;
-    return null;
-  }
-
   const tabs: { key: TabKey; label: string }[] = [
     { key: "products", label: "Productos" },
     { key: "categories", label: "Categorías" },
     { key: "orders", label: "Órdenes" },
     { key: "media", label: "Medios" },
+    { key: "engraving", label: "Grabado" },
   ];
 
   return (
@@ -538,29 +516,17 @@ export function AdminPage() {
                     )}
                     <button type="button" className="admin-btn-danger" onClick={() => deleteCategory(category.id)}>Eliminar</button>
                   </div>
-                  <div className="row" style={{ marginTop: 4 }}>
-                    <button
-                      type="button"
-                      onClick={() => toggleCategoryEngraving(category.id, true)}
-                      title="Activar grabado en todos los productos de esta categoría"
-                      style={categoryEngravingState(category.name) === true ? { background: "#16a34a", color: "#fff", borderColor: "#16a34a" } : undefined}
-                    >
-                      Grabado ON
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleCategoryEngraving(category.id, false)}
-                      title="Desactivar grabado en todos los productos de esta categoría"
-                      style={categoryEngravingState(category.name) === false ? { background: "#16a34a", color: "#fff", borderColor: "#16a34a" } : undefined}
-                    >
-                      Grabado OFF
-                    </button>
-                  </div>
                 </article>
               );
             })}
           </div>
         </section>
+      ) : activeTab === "engraving" ? (
+        <EngravingTab
+          products={products}
+          categories={categories}
+          onRefresh={async () => { await loadProducts(); }}
+        />
       ) : activeTab === "media" ? (
         <MediaManagerTab />
       ) : (
