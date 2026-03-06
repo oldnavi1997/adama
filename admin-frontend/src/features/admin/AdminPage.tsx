@@ -13,6 +13,7 @@ type Product = {
   imageUrl?: string | null;
   imageUrls?: string[];
   isActive: boolean;
+  engravingEnabled?: boolean;
   createdAt: string;
 };
 
@@ -301,6 +302,16 @@ export function AdminPage() {
     }
   }
 
+  function categoryEngravingState(categoryName: string): boolean | null {
+    const categoryProducts = products.filter((p) => p.category === categoryName);
+    if (categoryProducts.length === 0) return null;
+    const allOn = categoryProducts.every((p) => p.engravingEnabled);
+    const allOff = categoryProducts.every((p) => !p.engravingEnabled);
+    if (allOn) return true;
+    if (allOff) return false;
+    return null;
+  }
+
   const tabs: { key: TabKey; label: string }[] = [
     { key: "products", label: "Productos" },
     { key: "categories", label: "Categorías" },
@@ -532,6 +543,7 @@ export function AdminPage() {
                       type="button"
                       onClick={() => toggleCategoryEngraving(category.id, true)}
                       title="Activar grabado en todos los productos de esta categoría"
+                      style={categoryEngravingState(category.name) === true ? { background: "#16a34a", color: "#fff", borderColor: "#16a34a" } : undefined}
                     >
                       Grabado ON
                     </button>
@@ -539,6 +551,7 @@ export function AdminPage() {
                       type="button"
                       onClick={() => toggleCategoryEngraving(category.id, false)}
                       title="Desactivar grabado en todos los productos de esta categoría"
+                      style={categoryEngravingState(category.name) === false ? { background: "#16a34a", color: "#fff", borderColor: "#16a34a" } : undefined}
                     >
                       Grabado OFF
                     </button>
