@@ -296,15 +296,15 @@ export function ProductDetailPage() {
                   type="text"
                   className="engraving-input"
                   value={engravingText}
-                  onChange={(e) => setEngravingText(e.target.value.slice(0, 10))}
-                  maxLength={10}
+                  onChange={(e) => setEngravingText(e.target.value.slice(0, 20))}
+                  maxLength={20}
                   placeholder="Ej: ANA♡"
                 />
                 {engravingText && !ENGRAVING_ALLOWED.test(engravingText) && (
                   <p className="engraving-warning">Solo se permiten: A-Z 0-9 ♡ † / - • . &amp; + (sin emojis)</p>
                 )}
                 <p className="engraving-instructions muted">
-                  El grabado es gratis, va en la parte interna o externa del anillo. Máximo 10 Caracteres (puede variar según el diseño y espacio del anillo, consultar al DM en caso de duda) A-Z 0-9 (Símbolos: ♡ † / - • . &amp; + SOLAMENTE) ¡NO EMOJIS!
+                  El grabado es gratis, va en la parte interna o externa del anillo. Máximo 20 Caracteres (puede variar según el diseño y espacio del anillo, consultar al DM en caso de duda) A-Z 0-9 (Símbolos: ♡ † / - • . &amp; + SOLAMENTE) ¡NO EMOJIS!
                 </p>
               </div>
             </details>
