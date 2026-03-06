@@ -9,6 +9,7 @@ interface OrderItem {
   productName: string;
   quantity: number;
   productPrice: Decimal;
+  engravingText?: string | null;
   product?: { imageUrl?: string | null } | null;
 }
 
@@ -67,6 +68,7 @@ export async function sendOrderConfirmationEmail(order: OrderForEmail): Promise<
       productName: item.productName,
       quantity: item.quantity,
       productPrice: item.productPrice,
+      engravingText: item.engravingText ?? null,
       imageUrl: item.product?.imageUrl ?? null
     })),
     address: order.address ?? null

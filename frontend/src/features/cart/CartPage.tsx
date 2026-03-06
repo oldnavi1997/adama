@@ -43,7 +43,7 @@ export function CartPage() {
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.productId}>
+                  <tr key={`${item.productId}-${item.engravingText ?? ""}`}>
                     <td className="cart-col-image">
                       {item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.name} className="cart-table-thumb" loading="lazy" />
@@ -54,28 +54,31 @@ export function CartPage() {
                     <td className="cart-col-product">
                       <p className="cart-table-brand">Adamantio</p>
                       <strong>{item.name}</strong>
+                      {item.engravingText && (
+                        <span className="cart-engraving-text">Grabado: &quot;{item.engravingText}&quot;</span>
+                      )}
                     </td>
                     <td className="cart-col-shipping">a calcular</td>
                     <td className="cart-col-price">S/ {item.price.toFixed(2)}</td>
                     <td className="cart-col-qty">
                       <div className="cart-qty-control">
-                        <button type="button" onClick={() => updateQty(item.productId, item.quantity - 1)}>
+                        <button type="button" onClick={() => updateQty({ productId: item.productId, engravingText: item.engravingText }, item.quantity - 1)}>
                           −
                         </button>
                         <input
                           type="number"
                           min={1}
                           value={item.quantity}
-                          onChange={(e) => updateQty(item.productId, Number(e.target.value))}
+                          onChange={(e) => updateQty({ productId: item.productId, engravingText: item.engravingText }, Number(e.target.value))}
                         />
-                        <button type="button" onClick={() => updateQty(item.productId, item.quantity + 1)}>
+                        <button type="button" onClick={() => updateQty({ productId: item.productId, engravingText: item.engravingText }, item.quantity + 1)}>
                           +
                         </button>
                       </div>
                     </td>
                     <td className="cart-col-total">S/ {(item.price * item.quantity).toFixed(2)}</td>
                     <td className="cart-col-remove">
-                      <button type="button" onClick={() => removeItem(item.productId)} aria-label={`Eliminar ${item.name}`}>
+                      <button type="button" onClick={() => removeItem({ productId: item.productId, engravingText: item.engravingText })} aria-label={`Eliminar ${item.name}`}>
                         ×
                       </button>
                     </td>

@@ -21,6 +21,7 @@ export interface OrderItemData {
   quantity: number;
   productPrice: Decimal;
   imageUrl?: string | null;
+  engravingText?: string | null;
 }
 
 export interface AddressData {
@@ -151,6 +152,11 @@ export function OrderConfirmationEmail({ id, total, shippingCost, items, address
                     <Text className="m-0 text-[13px] text-[#888888] mt-1">
                       Cant.: {item.quantity} × {formatPEN(item.productPrice)}
                     </Text>
+                    {item.engravingText && (
+                      <Text className="m-0 text-[12px] text-[#666666] mt-1">
+                        Grabado: &quot;{item.engravingText}&quot;
+                      </Text>
+                    )}
                   </Column>
 
                   {/* Line total */}

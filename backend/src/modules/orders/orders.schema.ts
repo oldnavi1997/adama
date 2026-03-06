@@ -18,7 +18,8 @@ export const orderSchema = z.object({
     .array(
       z.object({
         productId: z.string().min(1),
-        quantity: z.number().int().positive()
+        quantity: z.number().int().positive(),
+        engravingText: z.string().max(10).optional()
       })
     )
     .min(1),

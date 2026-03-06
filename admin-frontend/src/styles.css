@@ -641,6 +641,13 @@ header {
   font-size: 0.9rem;
 }
 
+.admin-engraving-badge {
+  display: block;
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
 .admin-order-totals {
   margin-top: 12px;
   border-top: 1px solid #e5e7eb;

@@ -122,6 +122,7 @@ model OrderItem {
   productName    String
   productPrice   Decimal  @db.Decimal(10, 2)
   quantity       Int
+  engravingText  String?
 }
 
 model Payment {

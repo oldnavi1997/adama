@@ -53,7 +53,7 @@ type Order = {
     postalCode: string;
     country: string;
   } | null;
-  items: Array<{ id: string; productName: string; quantity: number; productPrice: string }>;
+  items: Array<{ id: string; productName: string; quantity: number; productPrice: string; engravingText?: string | null }>;
   payments: Array<{ id: string; status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"; amount: string }>;
 };
 
@@ -610,7 +610,12 @@ export function AdminPage() {
                         <p className="admin-order-label">Productos</p>
                         {order.items.map((item) => (
                           <div key={item.id} className="admin-order-item-row">
-                            <span>{item.productName} x{item.quantity}</span>
+                            <div>
+                              <span>{item.productName} x{item.quantity}</span>
+                              {item.engravingText && (
+                                <span className="admin-engraving-badge">Grabado: &quot;{item.engravingText}&quot;</span>
+                              )}
+                            </div>
                             <span>S/ {(Number(item.productPrice) * item.quantity).toFixed(2)}</span>
                           </div>
                         ))}

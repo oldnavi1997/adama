@@ -518,6 +518,13 @@ header nav {
   line-height: 1.35;
 }
 
+.cart-drawer-engraving {
+  display: block;
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 0.15rem;
+}
+
 .cart-drawer-item-meta {
   display: flex;
   gap: 10px;
@@ -702,6 +709,13 @@ header nav {
   text-transform: uppercase;
   font-size: 0.72rem;
   letter-spacing: 0.07em;
+}
+
+.cart-engraving-text {
+  display: block;
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
 }
 
 .cart-col-shipping,
@@ -2810,6 +2824,47 @@ main.container {
 
 .product-collapse-body .muted {
   margin: 0 0 0.4rem;
+}
+
+/* Engraving section */
+.engraving-samples {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.engraving-sample-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid #e5e7eb;
+}
+
+.engraving-input {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 0.4rem;
+  box-sizing: border-box;
+}
+
+.engraving-warning {
+  color: #dc2626;
+  font-size: 0.8rem;
+  margin: 0 0 0.35rem;
+}
+
+.engraving-instructions {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .product-content-images {
