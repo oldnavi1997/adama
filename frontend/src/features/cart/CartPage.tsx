@@ -4,21 +4,9 @@ import { useCartStore } from "./cart.store";
 export function CartPage() {
   const { items, updateQty, removeItem } = useCartStore();
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const hasFreeShipping = subtotal >= 299;
 
   return (
     <section className="cart-full-page">
-      <div className="cart-shipping-banner">
-        <span className="cart-shipping-banner__icon" aria-hidden="true">
-          🚚
-        </span>
-        <p>
-          {hasFreeShipping
-            ? "Felicidades, ya tienes ENVIO GRATIS."
-            : "Te faltan compras para obtener envio gratis."}
-        </p>
-      </div>
-
       {items.length === 0 ? (
         <div className="cart-empty-state card">
           <h2>Su carrito esta vacio</h2>

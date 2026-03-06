@@ -301,7 +301,7 @@ function Layout() {
                   className="cart-drawer-checkout-btn"
                   onClick={closeDrawer}
                 >
-                  Ir al checkout
+                  Ir al Pago
                 </Link>
                 <div className="cart-drawer-footer-links">
                   <Link to="/cart" onClick={closeDrawer}>

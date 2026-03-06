@@ -35,7 +35,7 @@ const DEPARTMENTS = UBIGEO.departments;
 const PROVINCES_BY_DEPARTMENT = UBIGEO.provincesByDepartment;
 const DISTRICTS_BY_DEPARTMENT_PROVINCE = UBIGEO.districtsByDepartmentProvince;
 
-const SHALOM_PRICE = 0;
+const SHALOM_PRICE = 8;
 const OLVA_PRICE_BY_DEPARTMENT: Record<string, number> = {
   Amazonas: 18,
   Ancash: 18,
@@ -159,7 +159,7 @@ export function CheckoutPage() {
   const shippingCost =
     courier === "shalom" ? SHALOM_PRICE : OLVA_PRICE_BY_DEPARTMENT[address.state] ?? 15;
   const beforeCommission = subtotal + shippingCost;
-  const mpCommission =0;
+  const mpCommission = beforeCommission * 0.0329 * (1 + 0.18) + 1.18;
   const total = beforeCommission + mpCommission;
 
   const emailTrim = email.trim();

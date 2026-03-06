@@ -30,6 +30,7 @@ type OrderSummary = {
     quantity: number;
     productPrice: string;
     imageUrl?: string | null;
+    engravingText?: string | null;
   }>;
   payments: Array<{ id: string; status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"; amount: string }>;
 };
@@ -156,6 +157,9 @@ export function CheckoutSuccessPage() {
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0 }}>{item.productName}</p>
                 <p style={{ margin: 0, fontSize: "0.85rem", color: "#6b7280" }}>x{item.quantity}</p>
+                {item.engravingText && (
+                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#6b7280" }}>Grabado: &quot;{item.engravingText}&quot;</p>
+                )}
               </div>
               <span style={{ fontWeight: 500 }}>S/ {(Number(item.productPrice) * item.quantity).toFixed(2)}</span>
             </div>
