@@ -60,8 +60,9 @@ model Product {
   category       String?
   price         Decimal     @db.Decimal(10, 2)
   stock         Int
-  isActive      Boolean     @default(true)
-  createdAt     DateTime    @default(now())
+  isActive         Boolean     @default(true)
+  engravingEnabled Boolean     @default(false)
+  createdAt        DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   orderItems    OrderItem[]
 }

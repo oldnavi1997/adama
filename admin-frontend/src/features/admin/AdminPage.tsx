@@ -287,6 +287,20 @@ export function AdminPage() {
     }
   }
 
+  async function toggleCategoryEngraving(categoryId: string, enabled: boolean) {
+    try {
+      setError("");
+      await api(`/products/categories/${categoryId}/engraving`, {
+        method: "PATCH",
+        auth: true,
+        body: JSON.stringify({ engravingEnabled: enabled })
+      });
+      await loadProducts();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
   const tabs: { key: TabKey; label: string }[] = [
     { key: "products", label: "Productos" },
     { key: "categories", label: "Categorías" },
@@ -512,6 +526,22 @@ export function AdminPage() {
                       <button type="button" onClick={() => setEditingCategoryId(category.id)}>Editar</button>
                     )}
                     <button type="button" className="admin-btn-danger" onClick={() => deleteCategory(category.id)}>Eliminar</button>
+                  </div>
+                  <div className="row" style={{ marginTop: 4 }}>
+                    <button
+                      type="button"
+                      onClick={() => toggleCategoryEngraving(category.id, true)}
+                      title="Activar grabado en todos los productos de esta categoría"
+                    >
+                      Grabado ON
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleCategoryEngraving(category.id, false)}
+                      title="Desactivar grabado en todos los productos de esta categoría"
+                    >
+                      Grabado OFF
+                    </button>
                   </div>
                 </article>
               );

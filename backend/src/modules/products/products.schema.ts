@@ -11,5 +11,6 @@ export const productSchema = z.object({
   category: z.string().min(2).optional().or(z.literal("")),
   price: z.number().positive(),
   stock: z.number().int().nonnegative(),
-  isActive: z.boolean().optional()
+  isActive: z.boolean().optional(),
+  engravingEnabled: z.boolean().optional()
 });

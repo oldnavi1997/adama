@@ -346,6 +346,24 @@ productsRouter.patch("/categories/:id", requireAuth, requireRole(UserRole.ADMIN)
   res.json({ id, name, parentId });
 });
 
+productsRouter.patch("/categories/:id/engraving", requireAuth, requireRole(UserRole.ADMIN), async (req, res) => {
+  await ensureCategoriesTable();
+  const id = req.params.id;
+  const enabled = Boolean(req.body?.engravingEnabled);
+  const categoryRows = await prisma.$queryRaw<Array<CategoryNameRow>>`SELECT id, name FROM categories WHERE id = ${id} LIMIT 1`;
+  const category = categoryRows[0];
+  if (!category) { res.status(404).json({ message: "Category not found" }); return; }
+  const result = await prisma.product.updateMany({
+    where: { category: category.name },
+    data: { engravingEnabled: enabled }
+  });
+  await Promise.all([
+    redisDeleteByPrefix(PRODUCTS_CACHE_PREFIX),
+    redisDeleteByPrefix(CATEGORIES_PUBLIC_CACHE_PREFIX)
+  ]);
+  res.json({ updated: result.count, engravingEnabled: enabled });
+});
+
 productsRouter.delete("/categories/:id", requireAuth, requireRole(UserRole.ADMIN), async (req, res) => {
   await ensureCategoriesTable();
   const id = req.params.id;
