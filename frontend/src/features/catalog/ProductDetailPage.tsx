@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { useCartStore } from "../cart/cart.store";
 import { slugify } from "../../app/slug";
 import { useProduct } from "../../app/queries";
+import { EngravingCarousel } from "./EngravingCarousel";
 
 type ProductDetail = {
   id: string;
@@ -41,7 +42,6 @@ export function ProductDetailPage() {
     startX: 0,
     deltaX: 0
   });
-
   const resolvedProductId =
     productIdParam ??
     (() => {
@@ -152,14 +152,6 @@ export function ProductDetailPage() {
       goPrevious();
     }
   };
-
-  const ENGRAVING_SAMPLES = [
-    "https://res.cloudinary.com/dzqns7kss/image/upload/v1772765494/WhatsApp_Image_2026-03-05_at_7.44.30_PM_1__05_03_2026_gnhjn1.webp",
-    "https://res.cloudinary.com/dzqns7kss/image/upload/v1772765494/WhatsApp_Image_2026-03-05_at_7.44.30_PM_2__05_03_2026_smowko.webp",
-    "https://res.cloudinary.com/dzqns7kss/image/upload/v1772765493/WhatsApp_Image_2026-03-05_at_7.44.30_PM_05_03_2026_flg2ts.webp",
-    "https://res.cloudinary.com/dzqns7kss/image/upload/v1772765494/WhatsApp_Image_2026-03-05_at_7.44.29_PM_1__05_03_2026_pfhikt.webp",
-    "https://res.cloudinary.com/dzqns7kss/image/upload/v1772765493/WhatsApp_Image_2026-03-05_at_7.44.29_PM_05_03_2026_q10b5w.webp",
-  ];
 
   const ENGRAVING_ALLOWED = /^[A-Za-z0-9♡†/\-•.&+ ]*$/;
 
@@ -299,11 +291,7 @@ export function ProductDetailPage() {
                 <CollapseChevron />
               </summary>
               <div className="product-collapse-body">
-                <div className="engraving-samples">
-                  {ENGRAVING_SAMPLES.map((url, i) => (
-                    <img key={i} src={url} alt={`Ejemplo de grabado ${i + 1}`} className="engraving-sample-thumb" loading="lazy" />
-                  ))}
-                </div>
+                <EngravingCarousel />
                 <input
                   type="text"
                   className="engraving-input"
