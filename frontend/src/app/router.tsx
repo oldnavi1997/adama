@@ -1,7 +1,7 @@
 import { createBrowserRouter, Link, ScrollRestoration, useLocation, useNavigate } from "react-router-dom";
 import KeepAliveRouteOutlet from "keepalive-for-react-router";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { CatalogPage } from "../features/catalog/CatalogPage";
+import { Homepage } from "../features/catalog/Homepage";
 import { CategoryPage } from "../features/catalog/CategoryPage";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useCartStore } from "../features/cart/cart.store";
@@ -413,7 +413,7 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-      { index: true, element: <CatalogPage /> },
+      { index: true, element: <Homepage /> },
       { path: "products/:productId", element: <LazyRoute><ProductDetailPage /></LazyRoute> },
       { path: "producto/:productSlug", element: <LazyRoute><ProductDetailPage /></LazyRoute> },
       { path: "categoria/:categorySlug", element: <CategoryPage /> },

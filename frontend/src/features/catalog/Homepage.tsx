@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { productDetailPath, slugify } from "../../app/slug";
 import { useProducts, queryClient } from "../../app/queries";
 import { api } from "../../app/api";
+import { VideoSpotlight } from "./VideoSpotlight";
 
 const META_TITLE = "Adamantio | Anillos de Promesa y Joyería Plata 925 – Regalos con Significado en Perú";
 const META_DESCRIPTION =
@@ -36,7 +37,7 @@ type Product = {
   imageUrls?: string[];
 };
 
-export function CatalogPage() {
+export function Homepage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [sortBy, setSortBy] = useState("default");
@@ -133,6 +134,8 @@ export function CatalogPage() {
           </div>
         </div>
       </section>
+
+      <VideoSpotlight />
 
       <section className="home-categories" aria-label="Categorías destacadas">
         {FEATURED_CATEGORIES.map((cat) => (
