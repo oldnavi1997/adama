@@ -20,6 +20,10 @@ type ProductDetail = {
   engravingEnabled?: boolean;
 };
 
+function isVideo(url: string) {
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+}
+
 function CollapseChevron() {
   return (
     <svg className="product-collapse-chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -215,9 +219,22 @@ export function ProductDetailPage() {
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerEnd}
                 onPointerCancel={handlePointerEnd}
-                onClick={() => { if (!dragState.current.active) setLightboxOpen(true); }}
+                onClick={() => { if (!dragState.current.active && !isVideo(currentImage)) setLightboxOpen(true); }}
               >
-                <img key={currentImage} src={currentImage} alt={product.name} className="product-image product-image--fade-in" />
+                {isVideo(currentImage) ? (
+                  <video
+                    key={currentImage}
+                    src={currentImage}
+                    className="product-image product-image--fade-in"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  />
+                ) : (
+                  <img key={currentImage} src={currentImage} alt={product.name} className="product-image product-image--fade-in" />
+                )}
                 {hasMultipleImages && (
                   <>
                     <button type="button" className="image-slider__nav image-slider__nav--prev" onClick={(e) => { e.stopPropagation(); goPrevious(); }}>
@@ -238,7 +255,14 @@ export function ProductDetailPage() {
                       className={`image-slider__thumb ${currentIndex === index ? "active" : ""}`}
                       onClick={() => setCurrentIndex(index)}
                     >
-                      <img src={imageUrl} alt={`${product.name} ${index + 1}`} />
+                      {isVideo(imageUrl) ? (
+                        <span style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", background: "#111" }}>
+                          <video src={imageUrl} muted playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <span style={{ position: "absolute", color: "#fff", fontSize: "1.1rem", pointerEvents: "none", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>▶</span>
+                        </span>
+                      ) : (
+                        <img src={imageUrl} alt={`${product.name} ${index + 1}`} />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -320,18 +344,30 @@ export function ProductDetailPage() {
       {product.contentImages && product.contentImages.length > 0 && (
         <div className="product-content-images">
           {product.contentImages.map((url, i) => (
-            <img
-              key={i}
-              src={url}
-              alt={`${product.name} ${i + 1}`}
-              loading="lazy"
-              className="product-content-img"
-            />
+            isVideo(url) ? (
+              <video
+                key={i}
+                src={url}
+                className="product-content-img"
+                muted
+                loop
+                playsInline
+                controls
+              />
+            ) : (
+              <img
+                key={i}
+                src={url}
+                alt={`${product.name} ${i + 1}`}
+                loading="lazy"
+                className="product-content-img"
+              />
+            )
           ))}
         </div>
       )}
 
-      {lightboxOpen && currentImage && (
+      {lightboxOpen && currentImage && !isVideo(currentImage) && (
         <div className="product-lightbox" onClick={() => setLightboxOpen(false)}>
           <img src={currentImage} alt={product.name} onClick={(e) => e.stopPropagation()} />
           <button type="button" className="product-lightbox-close" onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}>✕</button>
