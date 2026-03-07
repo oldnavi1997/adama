@@ -309,12 +309,20 @@ export function ProductDetailPage() {
               </Collapse>
             )}
 
-            <Collapse title="Envío y entrega">
-              <p className="muted">Envíos disponibles por Shalom y Olva Courier.</p>
-              <ul>
-                <li>Shalom: recojo en agencia, desde S/ 8.</li>
-                <li>Olva Courier: agencia o delivery, desde S/ 12.</li>
-                <li>Tiempo estimado: 1 a 3 días hábiles según ciudad.</li>
+            <Collapse title="Información de envíos.">
+              <p className="muted"></p>
+              <p style={{ fontSize: "14px" }}>Los envios se manejan por las empresas Shalom y Olva Courier</p>
+              <p style={{ fontSize: "14px" }}><strong>Shalom</strong>:</p>
+              <ul style={{ fontSize: "14px" }}>
+                <li style={{ fontSize: "14px" }}>Recojo en agencia</li>
+                <li style={{ fontSize: "14px" }}>Costo de envío: 8 soles</li>
+                <li style={{ fontSize: "14px" }}>Tiempo estimado de llegada a destino entre 1-2 días ciudades del Centro y Sur del país, Norte 2-3 días.</li>
+              </ul>
+              <p style={{ fontSize: "14px" }}><strong>Olva Courier:</strong></p>
+              <ul style={{ fontSize: "14px" }}>
+                <li style={{ fontSize: "14px" }}>Recojo en agencia o delivery</li>
+                <li style={{ fontSize: "14px" }}>Costo de envío: 12-18 soles</li>
+                <li style={{ fontSize: "14px" }}>Tiempo estimado de llegada a destino entre 1-2 días ciudades del Centro y Sur del país, Norte 2-3 días.</li>
               </ul>
             </Collapse>
 
