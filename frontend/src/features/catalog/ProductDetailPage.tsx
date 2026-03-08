@@ -16,6 +16,7 @@ type ProductDetail = {
   contentImages?: string[];
   productDetails?: string;
   sizeInfo?: string;
+  sizes?: string[];
   category?: string | null;
   engravingEnabled?: boolean;
 };
@@ -63,6 +64,7 @@ export function ProductDetailPage() {
   const [addedFeedback, setAddedFeedback] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [engravingText, setEngravingText] = useState("");
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const dragState = useRef({
     active: false,
     pointerId: -1,
@@ -182,15 +184,21 @@ export function ProductDetailPage() {
 
   const ENGRAVING_ALLOWED = /^[A-Za-z0-9♡†/\-•.&+ ]*$/;
 
+  const hasSizes = (product.sizes?.length ?? 0) > 0;
+  const sizeRequired = hasSizes && !selectedSize;
+
   const handleAddToCart = () => {
+    if (sizeRequired) return;
     addItem({
       productId: product.id,
       name: product.name,
       price: Number(product.price),
       imageUrl: currentImage || product.imageUrl || product.imageUrls?.[0] || "",
-      engravingText: engravingText.trim() || undefined
+      engravingText: engravingText.trim() || undefined,
+      selectedSize: selectedSize ?? undefined
     });
     setAddedFeedback(true);
+    setSelectedSize(null);
     openDrawer();
     setTimeout(() => setAddedFeedback(false), 1500);
   };
@@ -285,15 +293,42 @@ export function ProductDetailPage() {
             <div className="product-description" dangerouslySetInnerHTML={{ __html: product.description }} />
           )}
 
+          {hasSizes && (
+            <div className="size-selector">
+              <div className="size-selector-label">
+                <span>Talla</span>
+                {selectedSize && <span className="size-selector-value">: {selectedSize}</span>}
+              </div>
+              <div className="size-selector-options">
+                {product.sizes!.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    className={`size-option${selectedSize === size ? " selected" : ""}`}
+                    onClick={() => setSelectedSize(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {product.stock < 1 && (
             <span className="product-out-of-stock">Sin stock</span>
           )}
           <button
             className={`product-add-btn${addedFeedback ? " is-added" : ""}`}
             onClick={handleAddToCart}
-            disabled={product.stock < 1 || addedFeedback}
+            disabled={product.stock < 1 || addedFeedback || sizeRequired}
           >
-            {product.stock < 1 ? "Sin stock" : addedFeedback ? "Agregado al carrito" : "Agregar al carrito"}
+            {product.stock < 1
+              ? "Sin stock"
+              : addedFeedback
+                ? "Agregado al carrito"
+                : sizeRequired
+                  ? "Selecciona una talla"
+                  : "Agregar al carrito"}
           </button>
 
           <div className="product-collapse-group">

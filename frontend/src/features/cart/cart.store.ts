@@ -7,12 +7,17 @@ export type CartItem = {
   imageUrl?: string;
   quantity: number;
   engravingText?: string;
+  selectedSize?: string;
 };
 
-type ItemKey = { productId: string; engravingText?: string };
+type ItemKey = { productId: string; engravingText?: string; selectedSize?: string };
 
 function sameKey(a: ItemKey, b: ItemKey) {
-  return a.productId === b.productId && (a.engravingText ?? "") === (b.engravingText ?? "");
+  return (
+    a.productId === b.productId &&
+    (a.engravingText ?? "") === (b.engravingText ?? "") &&
+    (a.selectedSize ?? "") === (b.selectedSize ?? "")
+  );
 }
 
 type CartState = {

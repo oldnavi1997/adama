@@ -240,7 +240,7 @@ function Layout() {
             <>
               <div className="cart-drawer-list">
                 {items.map((item) => (
-                  <div key={`${item.productId}-${item.engravingText ?? ""}`} className="cart-drawer-item">
+                  <div key={`${item.productId}-${item.engravingText ?? ""}-${item.selectedSize ?? ""}`} className="cart-drawer-item">
                     <div className="cart-drawer-item-main">
                       {item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.name} className="cart-drawer-thumb" />
@@ -254,12 +254,15 @@ function Layout() {
                             type="button"
                             className="cart-drawer-remove-icon"
                             aria-label={`Eliminar ${item.name}`}
-                            onClick={() => removeItem({ productId: item.productId, engravingText: item.engravingText })}
+                            onClick={() => removeItem({ productId: item.productId, engravingText: item.engravingText, selectedSize: item.selectedSize })}
                           >
                             ×
                           </button>
                         </div>
                         <strong className="cart-drawer-name">{item.name}</strong>
+                        {item.selectedSize && (
+                          <span className="cart-drawer-engraving">Talla: {item.selectedSize}</span>
+                        )}
                         {item.engravingText && (
                           <span className="cart-drawer-engraving">Grabado: &quot;{item.engravingText}&quot;</span>
                         )}
@@ -267,7 +270,7 @@ function Layout() {
                           <select
                             className="cart-drawer-qty"
                             value={item.quantity}
-                            onChange={(e) => updateQty({ productId: item.productId, engravingText: item.engravingText }, Number(e.target.value))}
+                            onChange={(e) => updateQty({ productId: item.productId, engravingText: item.engravingText, selectedSize: item.selectedSize }, Number(e.target.value))}
                             aria-label={`Cantidad de ${item.name}`}
                           >
                             {Array.from({ length: 10 }, (_, index) => index + 1).map((qty) => (

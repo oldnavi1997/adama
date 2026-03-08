@@ -445,12 +445,14 @@ productsRouter.post("/", requireAuth, requireRole(UserRole.ADMIN), validateBody(
   const imageUrls = normalizeImageUrls(payload.imageUrls);
   const contentImages = normalizeImageUrls(payload.contentImages);
   const imageUrl = String(payload.imageUrl ?? "").trim() || imageUrls[0] || "";
+  const sizes: string[] = Array.isArray(payload.sizes) ? payload.sizes.map((s: unknown) => String(s).trim()).filter((s: string) => s.length > 0) : [];
   const product = await prisma.product.create({
     data: {
       ...payload,
       imageUrl,
       imageUrls,
       contentImages,
+      sizes,
       price: payload.price.toFixed(2)
     }
   });
@@ -466,6 +468,7 @@ productsRouter.put("/:id", requireAuth, requireRole(UserRole.ADMIN), validateBod
   const imageUrls = normalizeImageUrls(payload.imageUrls);
   const contentImages = normalizeImageUrls(payload.contentImages);
   const imageUrl = String(payload.imageUrl ?? "").trim() || imageUrls[0] || "";
+  const sizes: string[] = Array.isArray(payload.sizes) ? payload.sizes.map((s: unknown) => String(s).trim()).filter((s: string) => s.length > 0) : [];
   const product = await prisma.product.update({
     where: { id: req.params.id },
     data: {
@@ -473,6 +476,7 @@ productsRouter.put("/:id", requireAuth, requireRole(UserRole.ADMIN), validateBod
       imageUrl,
       imageUrls,
       contentImages,
+      sizes,
       price: payload.price.toFixed(2)
     }
   });

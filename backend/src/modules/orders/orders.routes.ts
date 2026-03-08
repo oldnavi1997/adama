@@ -84,7 +84,8 @@ ordersRouter.post("/", validateBody(orderSchema), async (req, res) => {
               productName: product.name,
               productPrice: product.price,
               quantity: item.quantity,
-              engravingText: item.engravingText ?? null
+              engravingText: item.engravingText ?? null,
+              selectedSize: item.selectedSize ?? null
             };
           })
         }
@@ -229,6 +230,7 @@ ordersRouter.get("/:id/confirmation", async (req, res) => {
       productPrice: item.productPrice,
       quantity: item.quantity,
       engravingText: item.engravingText ?? null,
+      selectedSize: item.selectedSize ?? null,
       imageUrl: item.product?.imageUrl ?? null
     })),
     payments: order.payments

@@ -239,7 +239,8 @@ export function CheckoutPage() {
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
-          engravingText: item.engravingText || undefined
+          engravingText: item.engravingText || undefined,
+          selectedSize: item.selectedSize || undefined
         })),
         courier,
         mpCommission: Number(mpCommission.toFixed(2))
@@ -710,7 +711,7 @@ export function CheckoutPage() {
           <h3>Resumen de la compra</h3>
           <div className="checkout-summary-list">
             {items.map((item) => (
-              <div key={`${item.productId}-${item.engravingText ?? ""}`} className="checkout-summary-item">
+              <div key={`${item.productId}-${item.engravingText ?? ""}-${item.selectedSize ?? ""}`} className="checkout-summary-item">
                 {item.imageUrl ? (
                   <img src={item.imageUrl} alt={item.name} className="checkout-summary-thumb" loading="lazy" />
                 ) : (
@@ -718,6 +719,9 @@ export function CheckoutPage() {
                 )}
                 <div className="checkout-summary-item-info">
                   <strong>{item.name}</strong>
+                  {item.selectedSize && (
+                    <span className="checkout-engraving-text">Talla: {item.selectedSize}</span>
+                  )}
                   {item.engravingText && (
                     <span className="checkout-engraving-text">Grabado: &quot;{item.engravingText}&quot;</span>
                   )}

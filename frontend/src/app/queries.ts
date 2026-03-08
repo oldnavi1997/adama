@@ -20,6 +20,7 @@ type Product = {
   contentImages?: string[];
   productDetails?: string;
   sizeInfo?: string;
+  sizes?: string[];
   engravingEnabled?: boolean;
 };
 

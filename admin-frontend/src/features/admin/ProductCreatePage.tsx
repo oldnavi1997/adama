@@ -29,6 +29,8 @@ export function ProductCreatePage() {
     imageUrl: ""
   });
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [sizeInput, setSizeInput] = useState("");
 
   const normalizedName = form.name.trim();
   const normalizedDescription = form.description.trim();
@@ -61,6 +63,7 @@ export function ProductCreatePage() {
         body: JSON.stringify({
           ...form,
           imageUrls: galleryUrls,
+          sizes,
           name: normalizedName,
           description: normalizedDescription,
           productDetails: form.productDetails.trim(),
@@ -128,6 +131,50 @@ export function ProductCreatePage() {
             placeholder="Información de talla (ajustable, talla única, medidas...)"
             minHeight={100}
           />
+        </div>
+        <div>
+          <label className="admin-field-label">Tallas disponibles</label>
+          <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+            <input
+              value={sizeInput}
+              onChange={(e) => setSizeInput(e.target.value)}
+              className="admin-field-input"
+              placeholder="Ej: S, M, L, XL, 38, 40..."
+              style={{ flex: 1 }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const v = sizeInput.trim();
+                  if (v && !sizes.includes(v)) setSizes((prev) => [...prev, v]);
+                  setSizeInput("");
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const v = sizeInput.trim();
+                if (v && !sizes.includes(v)) setSizes((prev) => [...prev, v]);
+                setSizeInput("");
+              }}
+            >
+              Añadir
+            </button>
+          </div>
+          <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+            {sizes.map((size) => (
+              <span key={size} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 20, padding: "2px 10px", fontSize: 13 }}>
+                {size}
+                <button
+                  type="button"
+                  onClick={() => setSizes((prev) => prev.filter((s) => s !== size))}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", padding: "0 2px", fontSize: 14, lineHeight: 1 }}
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
         <div>
           <label className="admin-field-label">Imagen principal (URL)</label>

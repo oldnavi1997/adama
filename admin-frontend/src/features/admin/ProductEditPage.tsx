@@ -17,6 +17,7 @@ type Product = {
   contentImages?: string[];
   productDetails?: string;
   sizeInfo?: string;
+  sizes?: string[];
   isActive: boolean;
 };
 
@@ -45,6 +46,7 @@ function productSnapshot(p: Product): string {
     contentImages: p.contentImages ?? [],
     productDetails: p.productDetails ?? "",
     sizeInfo: p.sizeInfo ?? "",
+    sizes: p.sizes ?? [],
     isActive: p.isActive
   });
 }
@@ -65,6 +67,7 @@ export function ProductEditPage() {
   const [uploadingMainImage, setUploadingMainImage] = useState(false);
   const originalSnapshot = useRef("");
 
+  const [sizeInput, setSizeInput] = useState("");
   const [contentDragIndex, setContentDragIndex] = useState<number | null>(null);
   const [contentOverIndex, setContentOverIndex] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -120,6 +123,7 @@ export function ProductEditPage() {
           contentImages: product.contentImages ?? [],
           productDetails: product.productDetails ?? "",
           sizeInfo: product.sizeInfo ?? "",
+          sizes: product.sizes ?? [],
           isActive: product.isActive
         })
       });
@@ -338,6 +342,54 @@ export function ProductEditPage() {
               placeholder="Información de talla (ajustable, talla única, medidas...)"
               minHeight={100}
             />
+          </div>
+          <div>
+            <label className="admin-field-label">Tallas disponibles</label>
+            <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+              <input
+                value={sizeInput}
+                onChange={(e) => setSizeInput(e.target.value)}
+                className="admin-field-input"
+                placeholder="Ej: S, M, L, XL, 38, 40..."
+                style={{ flex: 1 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const v = sizeInput.trim();
+                    if (v && !(product.sizes ?? []).includes(v)) {
+                      setProduct((prev) => (prev ? { ...prev, sizes: [...(prev.sizes ?? []), v] } : prev));
+                    }
+                    setSizeInput("");
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const v = sizeInput.trim();
+                  if (v && !(product.sizes ?? []).includes(v)) {
+                    setProduct((prev) => (prev ? { ...prev, sizes: [...(prev.sizes ?? []), v] } : prev));
+                  }
+                  setSizeInput("");
+                }}
+              >
+                Añadir
+              </button>
+            </div>
+            <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+              {(product.sizes ?? []).map((size) => (
+                <span key={size} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 20, padding: "2px 10px", fontSize: 13 }}>
+                  {size}
+                  <button
+                    type="button"
+                    onClick={() => setProduct((prev) => (prev ? { ...prev, sizes: (prev.sizes ?? []).filter((s) => s !== size) } : prev))}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#6b7280", padding: "0 2px", fontSize: 14, lineHeight: 1 }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
           <div>
             <label className="admin-field-label">Categoría</label>

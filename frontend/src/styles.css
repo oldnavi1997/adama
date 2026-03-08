@@ -1574,7 +1574,7 @@ header nav {
 }
 
 .product-page-premium .product-summary h1 {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.3;
   color: #111827;
 }
@@ -1585,7 +1585,7 @@ header nav {
 }
 
 .product-price {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   margin: 0;
   color: #111827;
@@ -3026,6 +3026,22 @@ main.container {
   color: #111827;
   text-decoration: underline;
 }
+
+/* Size selector */
+.size-selector { margin-bottom: 16px; }
+.size-selector-label { font-size: 0.88rem; color: #6b7280; margin-bottom: 10px; display: flex; gap: 4px; align-items: center; }
+.size-selector-value { color: #111827; font-weight: 600; }
+.size-selector-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.size-option {
+  min-width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid #d1d5db; background: #fff;
+  font-size: 0.875rem; font-weight: 500; color: #374151;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 10px;
+}
+.size-option:hover:not(.selected) { border-color: #111827; }
+.size-option.selected { background: #111827; color: #fff; border-color: #111827; }
 
 /* Out of stock badge */
 .product-out-of-stock {
