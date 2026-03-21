@@ -59,7 +59,7 @@ export function PoliticaReembolsosPage() {
           <li>
             <strong>Notificación previa:</strong> Comuníquese con nuestro equipo de atención al cliente a través de{" "}
             <a href="mailto:adamantio@gmail.com">adamantio@gmail.com</a> o al{" "}
-            <a href="tel:+51913192936">913 192 936</a>, proporcionando detalles del pedido y el motivo de la
+            <a href="tel:+51997676742">997 676 742</a>, proporcionando detalles del pedido y el motivo de la
             devolución.
           </li>
         </ol>
@@ -128,7 +128,7 @@ export function PoliticaReembolsosPage() {
         <p>
           Si tiene dudas o inquietudes sobre nuestra política de reembolsos o desea iniciar un proceso de devolución,
           nuestro equipo de atención al cliente estará encantado de ayudarle. Puede contactarnos a través de{" "}
-          <a href="mailto:adamantio@gmail.com">adamantio@gmail.com</a>, <a href="tel:+51913192936">913 192 936</a> o
+          <a href="mailto:adamantio@gmail.com">adamantio@gmail.com</a>, <a href="tel:+51997676742">997 676 742</a> o
           nuestro formulario de contacto en adamantio.pe.
         </p>
         <p>Nos esforzamos por ofrecer un servicio transparente y satisfactorio, y valoramos su confianza en Adamantio.</p>

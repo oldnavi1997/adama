@@ -85,7 +85,7 @@ export function LibroReclamacionesPage() {
           Para registrar su reclamo o queja en nuestro Libro de Reclamaciones, puede acercarse a nuestro punto de
           atención, enviar un correo a{" "}
           <a href="mailto:adamantio@gmail.com">adamantio@gmail.com</a> o contactarnos al{" "}
-          <a href="tel:+51913192936">913 192 936</a>. También puede utilizar el formulario de contacto disponible en{" "}
+          <a href="tel:+51997676742">997 676 742</a>. También puede utilizar el formulario de contacto disponible en{" "}
           <a href="https://www.adamantio.pe" target="_blank" rel="noopener noreferrer">
             adamantio.pe
           </a>
